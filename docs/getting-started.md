@@ -29,8 +29,8 @@ DAEMON_LLM_API_KEY=your-key-here
 Open `config.yaml` and set the provider and model:
 ```yaml
 llm:
-  base_url: https://api.groq.com/openai/v1     # your provider's OpenAI-compatible address
-  model: llama-3.3-70b-versatile                # a model that supports tool calling
+  base_url: https://integrate.api.nvidia.com/v1     # your provider's OpenAI-compatible address
+  model: nvidia/nemotron-3.5-lightning-30b-a3b      # a model that supports tool calling
 ```
 Everything else can stay at its default. Settings can also be changed in the dashboard (Settings); the file is then rewritten. See [Configuration](../README.md#configuration) for how `.env` and `config.yaml` work together.
 
