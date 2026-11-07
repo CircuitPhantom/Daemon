@@ -34,7 +34,7 @@ Too many attempts give a 429 rate limit; wait a while.
 signal:
   enabled: true
   account: "+15551234567"      # the bot's number (or DAEMON_SIGNAL_ACCOUNT in .env)
-  allowed: "+905551112233"     # who may talk to Daemon: your number, comma separated (or DAEMON_SIGNAL_ALLOWED)
+  allowed: "+15551112233"     # who may talk to Daemon: your number, comma separated (or DAEMON_SIGNAL_ALLOWED)
 ```
 Keep the quotes around numbers. Restart Daemon (`systemctl --user restart daemon`), then message the bot number from your own Signal. Daemon starts and supervises `signal-cli jsonRpc` itself, no extra service.
 
