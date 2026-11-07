@@ -1,0 +1,17 @@
+# Daemon: Python packages. Install with:  pip install -r requirements.txt
+# To get exactly the versions of your current machine, run backup.sh: it also writes requirements.lock.
+fastapi
+uvicorn[standard]      # includes websockets, needed by the phone bridge
+pydantic
+pyyaml
+requests               # fetch_url and web_search
+numpy
+faster-whisper
+pykokoro
+sounddevice            # wake word and live microphone on this computer (needs the portaudio system library)
+# optional, only if wake.engine is openwakeword:
+# openwakeword
+edge-tts               # free Edge voice
+miniaudio              # decodes the Edge voice (MP3)
+pillow                 # shrinks photos you send before the model sees them
+pypdf                  # reads the text of PDFs you send

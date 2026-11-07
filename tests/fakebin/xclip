@@ -1,0 +1,2 @@
+#!/bin/sh
+case "$*" in *-o*) cat "$FAKECLIP" ;; *) cat > "$FAKECLIP" ;; esac

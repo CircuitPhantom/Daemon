@@ -1,0 +1,2 @@
+#!/bin/bash
+echo launched >> /tmp/sp_log2; sleep 1; touch /tmp/sp_running; sleep 30

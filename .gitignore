@@ -1,0 +1,38 @@
+# secrets and personal settings
+config.yaml
+config.yaml.*
+.env
+.env.*
+!.env.example
+spotify_token.json
+*.before-env
+
+# runtime state
+*.json
+!tests/**/*.json
+*.jsonl
+chats/
+runs/
+jobs/
+uploads/
+inbox/
+memory/
+signal-data/
+.daemon-*
+
+# environments, caches, models
+venv/
+.venv/
+agent-venv/
+__pycache__/
+*.pyc
+models/
+static/lib/
+
+# backups, logs, captures
+*.tar.gz
+daemon-backup*
+requirements.lock
+*.log
+*.png
+!tests/**/*.png

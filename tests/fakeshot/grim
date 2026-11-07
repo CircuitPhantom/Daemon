@@ -1,0 +1,2 @@
+#!/bin/bash
+cp /tmp/claude-0/-home-claude/74d12628-e371-5c34-abf9-4ef858bb5faf/scratchpad/be/fake_screen.png "$1"

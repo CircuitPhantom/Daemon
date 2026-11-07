@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+# Fake signal-cli: `signal-cli -a ACCOUNT jsonRpc`. Incoming messages are read from $FAKE_INBOX, sends are logged to $FAKE_SENT.
+import sys, os, json, time, threading
+inbox=os.environ["FAKE_INBOX"]; sent=os.environ["FAKE_SENT"]
+if os.environ.get("FAKE_DIE"): sys.stderr.write("boom\n"); sys.exit(3)
+sys.stderr.write("fake started "+" ".join(sys.argv[1:])+"\n"); sys.stderr.flush()
+def pump():
+    pos=0
+    while True:
+        try:
+            with open(inbox) as f:
+                f.seek(pos); data=f.read(); pos=f.tell()
+        except FileNotFoundError: data=""
+        for line in data.splitlines():
+            if line.strip():
+                print(json.dumps({"jsonrpc":"2.0","method":"receive","params":{"envelope":json.loads(line),"account":"+1"}}),flush=True)
+        time.sleep(0.05)
+threading.Thread(target=pump,daemon=True).start()
+for line in sys.stdin:
+    m=json.loads(line); mid=m["id"]
+    if m["method"]=="send":
+        open(sent,"a").write(json.dumps(m["params"])+"\n")
+        fail=os.environ.get("FAKE_FAIL")
+        res={"timestamp":1,"results":[{"type":fail or "SUCCESS"}]}
+        print(json.dumps({"jsonrpc":"2.0","result":res,"id":mid}),flush=True)
+    elif m["method"]=="getUserStatus":
+        print(json.dumps({"jsonrpc":"2.0","result":[{"number":m["params"]["recipient"][0],"uuid":"11111111-2222-3333-4444-555555555555","isRegistered":True}],"id":mid}),flush=True)
+    elif m["method"]=="getAttachment" and os.path.exists(os.path.join(os.environ.get("FAKE_ATTDIR","/nonexistent"), m["params"]["id"])):
+        import base64
+        print(json.dumps({"jsonrpc":"2.0","result":{"data":base64.b64encode(open(os.path.join(os.environ["FAKE_ATTDIR"], m["params"]["id"]),"rb").read()).decode()},"id":mid}),flush=True)
+    else:
+        print(json.dumps({"jsonrpc":"2.0","error":{"code":-1,"message":"unknown"},"id":mid}),flush=True)

@@ -1,0 +1,7 @@
+# Laptop agent (daemon-agent.py). The server needs requirements.txt instead.
+numpy
+sounddevice
+websockets>=12
+faster-whisper      # speech-to-text on the laptop (wake word + commands)
+# only if the server uses wake.engine: openwakeword
+# openwakeword

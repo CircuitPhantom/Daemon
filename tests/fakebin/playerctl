@@ -1,0 +1,18 @@
+#!/bin/sh
+# fake playerctl for the tests. State in $FAKESTATE (playing|paused|stopped|gone), "a track is loaded" = file $FAKELOADED
+echo "playerctl $*" >> "$FAKELOG"
+[ "$1" = "-p" ] && shift 2
+S=$(cat "$FAKESTATE" 2>/dev/null || echo playing)
+case "$1" in
+  -l) [ "$S" = gone ] && { echo "No players found" >&2; exit 1; }; echo spotify ;;
+  status) [ "$S" = gone ] && { echo "No players found" >&2; exit 1; }
+          case "$S" in playing) echo Playing;; paused) echo Paused;; *) echo Stopped;; esac ;;
+  metadata) echo "Artist - Song (spotify)" ;;
+  position) echo 12.0 ;;
+  play) if [ "$S" = paused ] || { [ "$S" = stopped ] && [ -e "$FAKELOADED" ]; }; then echo playing > "$FAKESTATE"; fi ;;
+  pause) echo paused > "$FAKESTATE" ;;
+  play-pause) if [ "$S" = playing ]; then echo paused > "$FAKESTATE"; else echo playing > "$FAKESTATE"; fi ;;
+  next|previous) : > "$FAKELOADED"; [ "$S" = stopped ] && echo playing > "$FAKESTATE" ;;
+  open) : > "$FAKELOADED"; echo playing > "$FAKESTATE" ;;
+esac
+exit 0

@@ -1,0 +1,327 @@
+# Daemon settings. You can edit this by hand; the server reloads it on the next message.
+# tools: enabled tools (execute_command, read_file, fetch_url)
+# memory: persistent notes for chats (enabled, auto_save). Tasks never use them.
+# search: web search (provider, brave_key, searxng_url, results, region). jobs: background jobs started with /job (max_running, timeout_minutes, tools). computer: mouse and keyboard control through the laptop agent (max_actions, blocked_keys).
+# llm: the cloud model (base_url, api_key, model; Anthropic, Groq, NVIDIA...). elevenlabs: cloud voice with fallback to the local one (api_key, voice_id, local_only...). edge_tts: free Edge voice (enabled, voice, rate, pitch, fallback). uploads: photos and files sent from the dashboard and Signal (enabled, dir, max_mb, max_chars, vision). security: ask before risky tools (confirm, confirm_tools, confirm_seconds). care: Signal alerts when something breaks, weekly memory check, morning plan extras (watchdog, memory_review, briefing_extras, briefing_city...). stt_cloud: speech-to-text in the cloud with local fallback (api_key, base_url, model). satellite: laptop agent for the microphone and desktop tools (satellite_setup.py). auth: PIN lock for the dashboard (enabled: false turns it off). calendar: daily plan call (briefing, briefing_time). wake: wake word on this computer's microphone. signal: chat over Signal (signal_bot.py). tool_profiles: named tool sets for the web UI.
+# app_aliases: names for open_app, e.g. spotify: spotify-launcher
+# spotify / spotify_aliases: for the spotify_play tool (client_id + client_secret from developer.spotify.com, and your own names for links)
+# Restart the server after changing stt/tts.
+# notify: timezone, dashboard address and phone call (Twilio) settings. Keep this file private. Keys and tokens can live in .env instead: write api_key: ${NAME} here, NAME=value in .env.
+# Note: when a setting changes from the web UI the file is rewritten, so your own comments are lost.
+
+think: true
+system_prompt: |
+  You are an AI assistant running on an Arch Linux based distro. This is just for your info, do not talk about this unless asked to do so.
+
+  Rules:
+  - Give clear, technical and relevant answers.
+  - Answer the question, without leaving the topic.
+  - Your answers are spoken aloud. Keep them short (1-3 sentences), plain text only: no markdown, lists, tables or emoji.
+  - When reporting command output, summarize the key points instead of repeating it.
+tools: []
+stt:
+  model: small
+  device: cpu
+  compute_type: int8
+tts:
+  voice: af_sarah
+  lang: en-us
+notify:
+  base_url: ''
+  timezone: Europe/Istanbul
+  twilio_sid: ''
+  twilio_token: ''
+  twilio_from: ''
+  twilio_to: ''
+  twilio_language: en-US
+  twilio_voice: alice
+  twilio_reminders: false
+  twilio_max_per_hour: 6
+  twilio_ring_seconds: 30
+memory:
+  enabled: true
+  auto_save: true
+app_aliases: {}
+spotify:
+  client_id: ''
+  client_secret: ''
+spotify_aliases: {}
+wake:
+  enabled: false
+  engine: whisper
+  phrase: hey daemon
+  aliases: daemon, demon, damon, damian, diamond
+  oww_model: hey_jarvis
+  input_device: ''
+  followup_seconds: 6
+signal:
+  enabled: false
+  account: ''
+  allowed: ''
+  cli: signal-cli
+  max_age: 600
+  data_dir: ''
+phone:
+  enabled: false
+  public_url: ''
+  port: 8001
+  max_minutes: 10
+  silence_seconds: 30
+  speech_level: 0.02
+  noise_mult: 4.0
+  min_speech_ms: 120
+  barge_ms: 500
+calendar:
+  briefing: false
+  briefing_time: 08:00
+  briefing_call: true
+  briefing_skip_empty: true
+auth:
+  enabled: false
+  pin_hash: ''
+  secret: ''
+elevenlabs:
+  enabled: false
+  api_key: ''
+  voice_id: ''
+  model: eleven_flash_v2_5
+  language: ''
+  local_only: false
+  fallback: true
+  monthly_chars: 0
+  audio_tags_use: normal
+  audio_tags: false
+stt_cloud:
+  enabled: false
+  base_url: https://api.groq.com/openai/v1
+  api_key: ''
+  model: whisper-large-v3-turbo
+  language: ''
+  timeout: 20
+edge_tts:
+  enabled: false
+  voice: en-US-AriaNeural
+  rate: +0%
+  pitch: +0Hz
+  primary: false
+  fallback: true
+uploads:
+  enabled: true
+  dir: ''
+  max_mb: 20
+  max_chars: 12000
+  vision: auto
+care:
+  watchdog: true
+  watch_minutes: 5
+  disk_free_percent: 10
+  backup_max_hours: 36
+  laptop_grace_minutes: 10
+  alert_repeat_hours: 6
+  memory_review: true
+  memory_review_day: 6
+  memory_review_time: '10:00'
+  briefing_extras: true
+  briefing_city: ''
+search:
+  provider: auto
+  brave_key: ''
+  searxng_url: ''
+  results: 5
+  region: ''
+jobs:
+  enabled: true
+  max_running: 2
+  timeout_minutes: 15
+  max_steps: 14
+  tools:
+  - web_search
+  - fetch_url
+  - read_file
+  - list_directory
+  - search_files
+  - search_text
+  - system_info
+  - get_time
+  - calculate
+  - calendar_list
+  - inbox_search
+  - inbox_recent
+  - inbox_add
+computer:
+  max_actions: 30
+  settle_seconds: 0.8
+  approval_delay: 1.5
+  blocked_keys:
+  - ctrl+alt+delete
+  - ctrl+alt+backspace
+  - super+l
+  coords: auto
+security:
+  confirm: true
+  confirm_tools:
+  - execute_command
+  - write_file
+  - send_file
+  - screenshot
+  confirm_seconds: 90
+satellite:
+  enabled: false
+  token: ''
+  tools:
+  - system_info
+  - media_control
+  - volume
+  - clipboard_read
+  - clipboard_write
+  - open_url
+  - open_app
+  - spotify_open
+  - screen_grab
+llm:
+  base_url: https://api.anthropic.com/v1
+  api_key: ''
+  model: claude-sonnet-5-5
+  timeout: 60
+tool_profiles:
+  'Off': []
+  Read only:
+  - read_file
+  - list_directory
+  - search_files
+  - search_text
+  - fetch_url
+  - web_search
+  - system_info
+  - get_time
+  - calculate
+  - calendar_list
+  - inbox_search
+  - inbox_recent
+  Assistant:
+  - read_file
+  - list_directory
+  - search_files
+  - search_text
+  - fetch_url
+  - web_search
+  - system_info
+  - get_time
+  - calculate
+  - calendar_list
+  - inbox_search
+  - inbox_recent
+  - remind_me
+  - list_reminders
+  - cancel_reminder
+  - send_message
+  - call_me
+  - calendar_add
+  - calendar_update
+  - calendar_delete
+  - write_file
+  - send_file
+  - inbox_add
+  - inbox_delete
+  - start_job
+  Desktop:
+  - read_file
+  - list_directory
+  - search_files
+  - search_text
+  - fetch_url
+  - web_search
+  - system_info
+  - get_time
+  - calculate
+  - calendar_list
+  - inbox_search
+  - inbox_recent
+  - remind_me
+  - list_reminders
+  - cancel_reminder
+  - media_control
+  - volume
+  - clipboard_read
+  - clipboard_write
+  - open_url
+  - open_app
+  - spotify_play
+  - spotify_devices
+  - spotify_transfer
+  Full:
+  - execute_command
+  - read_file
+  - list_directory
+  - search_files
+  - search_text
+  - fetch_url
+  - web_search
+  - system_info
+  - get_time
+  - calculate
+  - write_file
+  - send_file
+  - screenshot
+  - computer
+  - start_job
+  - inbox_add
+  - inbox_search
+  - inbox_recent
+  - inbox_delete
+  - remind_me
+  - list_reminders
+  - cancel_reminder
+  - send_message
+  - call_me
+  - calendar_list
+  - calendar_add
+  - calendar_update
+  - calendar_delete
+  - spotify_play
+  - spotify_devices
+  - spotify_transfer
+  - media_control
+  - volume
+  - clipboard_read
+  - clipboard_write
+  - open_url
+  - open_app
+tools_seen:
+- execute_command
+- read_file
+- list_directory
+- search_files
+- search_text
+- fetch_url
+- web_search
+- system_info
+- get_time
+- calculate
+- write_file
+- send_file
+- screenshot
+- computer
+- start_job
+- inbox_add
+- inbox_search
+- inbox_recent
+- inbox_delete
+- remind_me
+- list_reminders
+- cancel_reminder
+- send_message
+- call_me
+- calendar_list
+- calendar_add
+- calendar_update
+- calendar_delete
+- spotify_play
+- spotify_devices
+- spotify_transfer
+- media_control
+- volume
+- clipboard_read
+- clipboard_write
+- open_url
+- open_app

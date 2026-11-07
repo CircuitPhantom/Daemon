@@ -1,0 +1,11 @@
+#!/bin/bash
+# fake playerctl: -l lists players (only when /tmp/sp_running exists); logs every call
+echo "$@" >> /tmp/sp_log
+[ "$1" = "-l" ] && { [ -f /tmp/sp_running ] && echo spotify; [ -f /tmp/sp_running ] && exit 0 || exit 1; }
+if [ "$1" = "-p" ]; then shift 2; fi
+case "$1" in
+ open) echo "$2" > /tmp/sp_uri; echo Playing > /tmp/sp_state;;
+ status) cat /tmp/sp_state 2>/dev/null || echo Paused;;
+ play) echo Playing > /tmp/sp_state;;
+esac
+exit 0

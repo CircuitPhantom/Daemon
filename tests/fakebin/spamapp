@@ -1,0 +1,3 @@
+#!/bin/sh
+# a GUI-like app: prints forever, never exits, stays attached to inherited stdout
+while true; do echo "app log line"; sleep 0.05; done

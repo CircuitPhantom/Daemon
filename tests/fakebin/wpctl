@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "wpctl $*" >> "$FAKELOG"
+case "$1" in get-volume) echo "Volume: 0.35";; esac
