@@ -79,5 +79,16 @@ tests/run.sh tjobs tllm   # some of them
 ```
 The tests use stubs for the speech and LLM libraries, so no models, network or API keys are needed.
 
+## Third-party software and services
+Nothing third-party is bundled in this repository. Dependencies are installed by `pip` / `setup.sh` under their own licenses:
+FastAPI, Uvicorn, Pydantic, PyYAML, Requests, NumPy, Pillow, pypdf (permissive licenses), faster-whisper and the Whisper models (MIT),
+pykokoro and the Kokoro voice model (Apache 2.0). The dashboard libraries three.js (MIT), marked (MIT) and highlight.js (BSD-3-Clause)
+are downloaded from jsDelivr by `setup.sh`. The dashboard uses your system fonts and loads nothing from third-party servers at runtime.
+
+Optional online services follow their own terms, which you accept by enabling them: your LLM provider, ElevenLabs, Groq, Twilio, Spotify
+(Web API), Brave Search. Two features rely on unofficial access and may break or be restricted by the provider at any time:
+the free Edge voice (`edge-tts`, Microsoft's online voices) and the DuckDuckGo fallback of `web_search`. Use a Brave key or your own SearXNG
+for search if you want a supported path. Spotify and other names are trademarks of their owners; this project is not affiliated with them.
+
 ## License
 MIT, see [LICENSE](LICENSE). Contributions: [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).

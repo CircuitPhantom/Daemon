@@ -10,6 +10,7 @@ With Signal set up you can chat with Daemon from your phone, send it photos, voi
 > A number can only be a Signal account in one place. If you register your personal number for the bot, your phone's Signal stops working. Use a separate number for the bot.
 
 ## Install signal-cli
+- Arch: `sudo pacman -S signal-cli jdk-openjdk` (`setup.sh` offers this).
 - Debian/Ubuntu: `sudo apt install default-jre-headless`, then download signal-cli from <https://github.com/AsamK/signal-cli/releases>, unpack it and put `bin/signal-cli` in your `PATH` (for example `/usr/local/bin`).
 - Check: `signal-cli --version`.
 
@@ -34,7 +35,7 @@ Too many attempts give a 429 rate limit; wait a while.
 signal:
   enabled: true
   account: "+15551234567"      # the bot's number (or DAEMON_SIGNAL_ACCOUNT in .env)
-  allowed: "+15551112233"     # who may talk to Daemon: your number, comma separated (or DAEMON_SIGNAL_ALLOWED)
+  allowed: "+905551112233"     # who may talk to Daemon: your number, comma separated (or DAEMON_SIGNAL_ALLOWED)
 ```
 Keep the quotes around numbers. Restart Daemon (`systemctl --user restart daemon`), then message the bot number from your own Signal. Daemon starts and supervises `signal-cli jsonRpc` itself, no extra service.
 

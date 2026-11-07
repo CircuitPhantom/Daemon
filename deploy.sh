@@ -3,7 +3,7 @@
 # where you downloaded the new files.
 #
 #   bash deploy.sh                      first time: asks nothing, uses --host/--dir below and remembers them
-#   bash deploy.sh --host server@100.64.0.1 --dir '~/daemon'
+#   bash deploy.sh --host user@server-name --dir '~/daemon'
 #   bash deploy.sh --dry-run            only show what would change
 #   bash deploy.sh --rollback           put back the files of the last deploy and restart
 #   options: --no-restart  --force (copy files that look the same, too)  --agent DIR | --agent none  -y (do not ask)
@@ -38,7 +38,8 @@ while (($#)); do
   esac
   shift
 done
-HOST="${HOST:-server@100.64.0.1}"; RDIR="${RDIR:-~/daemon}"
+RDIR="${RDIR:-~/daemon}"
+[[ -n "$HOST" ]] || { echo "give the server with --host user@address (it is remembered afterwards)" >&2; exit 2; }
 PORT="${DAEMON_PORT:-8000}"
 
 say()  { printf '\033[1m%s\033[0m\n' "$*"; }
