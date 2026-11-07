@@ -35,7 +35,7 @@ Too many attempts give a 429 rate limit; wait a while.
 signal:
   enabled: true
   account: "+15551234567"      # the bot's number (or DAEMON_SIGNAL_ACCOUNT in .env)
-  allowed: "+905551112233"     # who may talk to Daemon: your number, comma separated (or DAEMON_SIGNAL_ALLOWED)
+  allowed: "+15551112233"     # who may talk to Daemon: your number, comma separated (or DAEMON_SIGNAL_ALLOWED)
 ```
 Keep the quotes around numbers. Restart Daemon (`systemctl --user restart daemon`), then message the bot number from your own Signal. Daemon starts and supervises `signal-cli jsonRpc` itself, no extra service.
 
@@ -70,3 +70,4 @@ Copy `~/.local/share/signal-cli` (`./backup.sh --with-signal` does it) and stop 
 | `signal-cli not found` | Not in the `PATH` of the service. Set `signal.cli` to the full path |
 | `decryption error` / `untrusted identity` | The account runs in two places, or the data was copied while signal-cli was running |
 | Registration fails with 429 / captcha | Wait, solve a fresh captcha |
+| Messages are failing to deliver | Check `journalctl --user -u daemon -f` output. If you see message from unknown ID blocked, add that ID near your phone number in config.yaml `signal.allowed` after making sure that it is yours |  
