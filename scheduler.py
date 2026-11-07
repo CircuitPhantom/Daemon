@@ -145,8 +145,10 @@ class Cron:
 
 
 def get_tz():
-    name = model_config.notify.get("timezone") or "Europe/Istanbul"
+    name = model_config.notify.get("timezone") or ""
     try:
+        if not name:
+            raise ValueError("no time zone set: use this computer's")
         return ZoneInfo(name)
     except Exception:
         return datetime.now().astimezone().tzinfo

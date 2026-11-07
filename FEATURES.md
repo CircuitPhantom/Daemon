@@ -1,4 +1,28 @@
-# New: web search, background jobs, computer control, phone app
+# Features
+
+## Tools
+Everything the model can call. Which ones it gets is set per chat by a **profile** (Settings > Tools): Off, Read only, Assistant,
+Desktop, Full (every tool) or your own (`tool_profiles` in `config.yaml`). Tools marked * ask for your approval first
+(`security.confirm_tools`) and are never given to scheduled tasks or background jobs.
+
+| Area | Tools |
+|---|---|
+| Files | `read_file`, `list_directory`, `search_files`, `search_text`, `write_file`*, `send_file`* |
+| Shell and system | `execute_command`*, `system_info`, `get_time`, `calculate` |
+| Web | `web_search`, `fetch_url` |
+| Reminders and phone | `remind_me`, `list_reminders`, `cancel_reminder`, `send_message` (Signal), `call_me` (Twilio call) |
+| Calendar | `calendar_list`, `calendar_add`, `calendar_update`, `calendar_delete` |
+| Inbox (notes, links, files archive) | `inbox_add`, `inbox_search`, `inbox_recent`, `inbox_delete` |
+| Background work | `start_job` |
+| Desktop (runs on the laptop agent when connected) | `media_control`, `volume`, `clipboard_read`, `clipboard_write`, `open_url`, `open_app` |
+| Spotify | `spotify_play`, `spotify_devices`, `spotify_transfer` |
+| Screen | `screenshot`*, `computer` (look, click, type, keys; see section 3) |
+
+`execute_command`, `system_info` and the desktop tools run on the laptop when the agent is connected and allows them
+(`satellite.tools`, `--allow`), otherwise on the server. Adding a tool: write a function with type hints and a docstring in
+`tools.py`, register it in `available_functions`, and add it to a profile in `model_config.py`.
+
+Details of the larger features follow.
 
 ## 1. Web search (`web_search` tool)
 Works without any setup (DuckDuckGo, with a second DuckDuckGo endpoint when the first asks for a captcha).

@@ -49,7 +49,7 @@ real=monitor.ui_file_version; monitor.ui_file_version=lambda p=None: None
 ok(any(p["key"]=="ui" for p in monitor.problems()), "stale page alerts"); monitor.ui_file_version=real
 
 # ---- memory check ----
-memstore.add("Poyraz uses Arch Linux on his laptop"); memstore.add("Poyraz uses Arch Linux on the laptop")
+memstore.add("Alex uses Arch Linux on his laptop"); memstore.add("Alex uses Arch Linux on the laptop")
 memstore.add("Prefers short answers in Turkish")
 rep=routines.memory_report(); ok("Similar" in rep and "/forget" in rep and "short answers" not in rep, rep)
 items=memstore.items(); items[2]["created"]=int(time.time())-200*86400; memstore._write(items)

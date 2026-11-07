@@ -3,6 +3,7 @@
 fastapi
 uvicorn[standard]      # includes websockets, needed by the phone bridge
 pydantic
+python-multipart      # Twilio webhooks (phone calls) send form data
 pyyaml
 requests               # fetch_url and web_search
 numpy

@@ -5,12 +5,13 @@
 #   ./setup-agent.sh --server https://NAME.tailnet.ts.net --token TOKEN     install, save the settings, start the service
 #   ./setup-agent.sh --remove                                                stop and remove the service
 #   options: --no-system (skip pacman/apt)  --no-service  --device "mic name"  -y
+#            --allow execute_command | screen_input   (repeat it) let the model use those tools on this laptop; off by default
 #
 # The server address is the one you open the dashboard with. The token comes from `python satellite_setup.py` on the server.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$HERE"
-SERVER=""; TOKEN=""; DEVICE=""; SYSTEM=1; SERVICE=1; YES=0; REMOVE=0
+SERVER=""; TOKEN=""; DEVICE=""; ALLOW=(); SYSTEM=1; SERVICE=1; YES=0; REMOVE=0
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 CONF="${XDG_CONFIG_HOME:-$HOME/.config}/daemon-agent.json"
 
@@ -19,11 +20,12 @@ while (($#)); do
     --server) shift; SERVER="${1:?--server needs an address}" ;;
     --token) shift; TOKEN="${1:?--token needs the token}" ;;
     --device) shift; DEVICE="${1:-}" ;;
+    --allow) shift; ALLOW+=("${1:?--allow needs a tool name}") ;;
     --no-system) SYSTEM=0 ;;
     --no-service) SERVICE=0 ;;
     --remove) REMOVE=1 ;;
     -y|--yes) YES=1 ;;
-    -h|--help) sed -n '2,10p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
   shift
@@ -38,7 +40,7 @@ if ((REMOVE)); then
   rm -f "$UNIT_DIR/daemon-agent.service"; systemctl --user daemon-reload
   echo "Removed the agent service (settings stay in $CONF)"; exit 0
 fi
-for f in daemon-agent.py tools.py wakeword.py; do [[ -f "$f" ]] || die "$f is missing in $HERE (copy it from the Daemon folder)"; done
+for f in daemon-agent.py tools.py wakeword.py screeninput.py; do [[ -f "$f" ]] || die "$f is missing in $HERE (copy it from the Daemon folder)"; done
 
 if ((SYSTEM)); then
   say "System packages"
@@ -66,16 +68,17 @@ if [[ -z "$PY" ]]; then
 fi
 echo "using $PY"
 
-if [[ -n "$SERVER" || -n "$TOKEN" ]]; then
-  [[ -n "$SERVER" && -n "$TOKEN" ]] || die "give both --server and --token"
+if [[ -n "$SERVER" || -n "$TOKEN" || ${#ALLOW[@]} -gt 0 ]]; then
+  [[ -z "$SERVER$TOKEN" || ( -n "$SERVER" && -n "$TOKEN" ) ]] || die "give both --server and --token"
   mkdir -p "$(dirname "$CONF")"; umask 077
-  "$PY" - "$CONF" "$SERVER" "$TOKEN" "$DEVICE" <<'PYEOF'
+  "$PY" - "$CONF" "$SERVER" "$TOKEN" "$DEVICE" ${ALLOW[@]+"${ALLOW[@]}"} <<'PYEOF'
 import json, sys
-conf, server, token, device = sys.argv[1:5]
+conf, server, token, device, *allow = sys.argv[1:]
 try: d = json.load(open(conf))
 except Exception: d = {}
-d.update(server=server, token=token)
+if server: d.update(server=server, token=token)
 if device: d["device"] = device
+if allow: d["allow"] = sorted(set(d.get("allow") or []) | set(allow))
 json.dump(d, open(conf, "w"), indent=1)
 PYEOF
   chmod 600 "$CONF"; echo "saved $CONF"

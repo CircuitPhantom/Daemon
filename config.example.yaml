@@ -11,7 +11,7 @@
 
 think: true
 system_prompt: |
-  You are an AI assistant running on an Arch Linux based distro. This is just for your info, do not talk about this unless asked to do so.
+  You are a voice and chat assistant running on the user's Linux computer.
 
   Rules:
   - Give clear, technical and relevant answers.
@@ -28,7 +28,7 @@ tts:
   lang: en-us
 notify:
   base_url: ''
-  timezone: Europe/Istanbul
+  timezone: ''
   twilio_sid: ''
   twilio_token: ''
   twilio_from: ''

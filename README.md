@@ -17,8 +17,7 @@ The language model is **cloud-hosted and OpenAI-compatible** (Anthropic, Groq, N
 - Persistent memory notes, uploads (photos, PDFs), PIN lock for the dashboard
 - Secrets in `.env`, settings in `config.yaml`
 
-See [FEATURES.md](FEATURES.md) for details on search, jobs, computer control, the phone app and `.env`.
-[MIGRATION.md](MIGRATION.md) describes the server + laptop-agent split.
+The tool list and the larger features are in [FEATURES.md](FEATURES.md); setup guides are in [docs/](docs/).
 
 ## Architecture
 ```
@@ -29,18 +28,31 @@ See [FEATURES.md](FEATURES.md) for details on search, jobs, computer control, th
 
 ## Quick start
 ```bash
-git clone https://github.com/CircuitPhantom/Daemon.git daemon && cd daemon
-./setup.sh                      # system packages, venv, Python packages (safe to run again)
+git clone https://github.com/CircuitPhantom/daemon.git && cd daemon
+./setup.sh                                  # system packages, venv, Python packages, dashboard libraries
 cp config.example.yaml config.yaml
 cp .env.example .env && chmod 600 .env
-$EDITOR .env                    # at least DAEMON_LLM_API_KEY; set llm.base_url and llm.model in config.yaml
-./install-service.sh            # optional: systemd user service
-# or by hand:
-.venv/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8000
+$EDITOR .env config.yaml                    # DAEMON_LLM_API_KEY in .env; llm.base_url and llm.model in config.yaml
+venv/bin/python doctor.py                   # what is missing?
+./install-service.sh                        # run in the background (or: venv/bin/python -m uvicorn server:app --port 8000)
 ```
-Open <http://127.0.0.1:8000>. `python doctor.py` checks the setup. `python set_pin.py` sets a dashboard PIN.
+Open <http://127.0.0.1:8000>. The full walk-through is in [docs/getting-started.md](docs/getting-started.md).
 
-For the phone: `tailscale serve --bg --https=443 http://127.0.0.1:8000`, then open the HTTPS address and "Install app".
+## Documentation
+| | |
+|---|---|
+| [Getting started](docs/getting-started.md) | Requirements, install, first chat, where files live, updating |
+| [LLM providers](docs/llm-providers.md) | Base URLs, picking a model, privacy |
+| [Voice and wake word](docs/voice.md) | Speech-to-text, text-to-speech engines, "hey daemon" |
+| [Remote access and phone app](docs/remote-access.md) | Tailscale, HTTPS, installing the PWA |
+| [Laptop agent](docs/laptop-agent.md) | Server + laptop layout, desktop tools, computer control |
+| [Signal](docs/signal.md) | Registering the bot number, commands |
+| [Phone calls](docs/phone-calls.md) | Twilio: Daemon calls you, you call Daemon |
+| [Spotify](docs/spotify.md) | App keys, one-time login, devices |
+| [Scheduled tasks](docs/tasks.md) | Cron tasks, background jobs, reminders |
+| [Troubleshooting](docs/troubleshooting.md) | Common errors |
+| [FEATURES.md](FEATURES.md) | All tools, web search, jobs, computer control, `.env` |
+| [MIGRATION.md](MIGRATION.md) | Moving Daemon to a home server |
 
 ## Configuration
 - `config.yaml` holds settings; the server reloads it on the next message. `config.example.yaml` lists every option with its default.
@@ -68,4 +80,4 @@ tests/run.sh tjobs tllm   # some of them
 The tests use stubs for the speech and LLM libraries, so no models, network or API keys are needed.
 
 ## License
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE). Contributions: [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).

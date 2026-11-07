@@ -21,7 +21,7 @@ import tools
 CONFIG_PATH = Path(os.environ.get("DAEMON_CONFIG") or Path(__file__).with_name("config.yaml"))
 ENV_PATH = Path(os.environ.get("DAEMON_ENV") or CONFIG_PATH.with_name(".env"))     # secrets: keys, tokens (see _resolve_env)
 
-DEFAULT_PROMPT = """You are an AI assistant running on an Arch Linux based distro. This is just for your info, do not talk about this unless asked to do so.
+DEFAULT_PROMPT = """You are a voice and chat assistant running on the user's Linux computer.
 
 Rules:
 - Give clear, technical and relevant answers.
@@ -38,7 +38,7 @@ DEFAULTS = {
     # Scheduled tasks: results come as Signal messages (see "signal" below), optionally a phone call.
     "notify": {
         "base_url": "",               # how your phone reaches the dashboard, e.g. https://mypc.tailnet.ts.net
-        "timezone": "Europe/Istanbul",
+        "timezone": "",               # e.g. "Europe/Berlin"; empty = this computer's time zone
         # Phone call for [CALL] tasks (twilio_call.py). Leave empty to disable.
         "twilio_sid": "",
         "twilio_token": "",
