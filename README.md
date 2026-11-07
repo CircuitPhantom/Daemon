@@ -29,7 +29,7 @@ See [FEATURES.md](FEATURES.md) for details on search, jobs, computer control, th
 
 ## Quick start
 ```bash
-git clone <this repo> daemon && cd daemon
+git clone https://github.com/CircuitPhantom/Daemon.git daemon && cd daemon
 ./setup.sh                      # system packages, venv, Python packages (safe to run again)
 cp config.example.yaml config.yaml
 cp .env.example .env && chmod 600 .env
