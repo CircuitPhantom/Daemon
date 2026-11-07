@@ -28,7 +28,7 @@ The tool list and the larger features are in [FEATURES.md](FEATURES.md); setup g
 
 ## Quick start
 ```bash
-git clone https://github.com/CircuitPhantom/daemon.git && cd daemon
+git clone https://github.com/CircuitPhantom/Daemon.git && cd daemon
 ./setup.sh                                  # system packages, venv, Python packages, dashboard libraries
 cp config.example.yaml config.yaml
 cp .env.example .env && chmod 600 .env
