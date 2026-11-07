@@ -11,7 +11,7 @@ This gets Daemon running on one Linux computer, with the dashboard in your brows
 
 ## 1. Install
 ```bash
-git clone https://github.com/CircuitPhantom/daemon.git
+git clone https://github.com/CircuitPhantom/Daemon.git
 cd daemon
 ./setup.sh
 ```
