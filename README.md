@@ -16,9 +16,10 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 - **Tool calling**: shell, files, web search, calendar, reminders, inbox, background jobs, Spotify, media keys, clipboard, apps, screenshots, [computer control](FEATURES.md#3-computer-control-computer-tool---two-switches-both-off-by-default)
 - **Safe by default**: tool profiles (Off / Read only / Assistant / Desktop / Full), approval for risky actions, PIN for the dashboard, secrets kept in `.env`
 - **Laptop agent** (`daemon-agent.py`): Daemon runs on an always-on machine at home, the laptop lends it a microphone, speakers and hands
-- **Automation**: cron-style scheduled tasks, routines, daily briefing, phone calls through Twilio
+- **Automation**: cron-style scheduled tasks, routines, daily briefing, phone calls through Twilio. Background jobs so you can keep talking
 - **Voice**: wake word ("hey daemon"), local Whisper or cloud speech-to-text, Kokoro / Edge / ElevenLabs voices
 - **Memory** notes, photo and PDF uploads, any OpenAI-compatible provider (Anthropic, OpenAI, Groq, NVIDIA, OpenRouter, Fireworks...)
+- **Phone Call**: Daemon can call you from your Twilio number (Optional)
 
 ## How it fits together
 ```
