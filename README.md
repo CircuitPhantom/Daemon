@@ -9,6 +9,8 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 
 > Status: personal project, shared as is. Linux only (developed on Arch + Hyprland, the server on Debian).
 
+![Daemon dashboard](docs/images/dashboard.png)
+
 ## Features
 - **Voice and text chat** from the web dashboard, an installable phone app (PWA with Share-menu support) and Signal
 - **Tool calling**: shell, files, web search, calendar, reminders, inbox, background jobs, Spotify, media keys, clipboard, apps, screenshots, [computer control](FEATURES.md#3-computer-control-computer-tool---two-switches-both-off-by-default)
