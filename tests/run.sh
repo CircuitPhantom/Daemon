@@ -2,8 +2,10 @@
 # Runs the test scripts in a scratch copy (they write state files next to themselves).
 #   tests/run.sh              all tests
 #   tests/run.sh tjobs tllm   only these
-# Needs: python3 with the requirements installed (the speech / LLM parts are stubbed), node for the PWA service worker test.
+# Needs: python3 with the requirements installed (the speech / LLM parts are stubbed), node for the PWA service worker test,
+# and ffmpeg (the audio tests make small files with it).
 set -u
+for c in python3 node ffmpeg; do command -v "$c" >/dev/null || echo "warning: $c not found, some tests will fail"; done
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(dirname "$HERE")"
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT

@@ -28,7 +28,7 @@ The tool list and the larger features are in [FEATURES.md](FEATURES.md); setup g
 
 ## Quick start
 ```bash
-git clone https://github.com/CircuitPhantom/Daemon.git && cd daemon
+git clone https://github.com/CircuitPhantom/daemon.git && cd daemon
 ./setup.sh                                  # system packages, venv, Python packages, dashboard libraries
 cp config.example.yaml config.yaml
 cp .env.example .env && chmod 600 .env
@@ -77,7 +77,7 @@ python3 -m pip install -r requirements.txt
 tests/run.sh              # all tests, in a scratch copy
 tests/run.sh tjobs tllm   # some of them
 ```
-The tests use stubs for the speech and LLM libraries, so no models, network or API keys are needed.
+The tests use stubs for the speech and LLM libraries, so no models, network or API keys are needed. They do need `node` and `ffmpeg` on the PATH.
 
 ## Third-party software and services
 Nothing third-party is bundled in this repository. Dependencies are installed by `pip` / `setup.sh` under their own licenses:

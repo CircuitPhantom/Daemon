@@ -13,5 +13,6 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "${{ matrix.python }}" }
       # The speech and LLM libraries are stubbed by the tests, so only the light dependencies are needed.
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg        # the tests make small audio files with it
       - run: pip install fastapi "uvicorn[standard]" pydantic python-multipart pyyaml requests numpy pillow pypdf httpx
       - run: bash tests/run.sh
