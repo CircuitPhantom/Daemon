@@ -11,8 +11,8 @@ This gets Daemon running on one Linux computer, with the dashboard in your brows
 
 ## 1. Install
 ```bash
-git clone https://github.com/CircuitPhantom/daemon.git
-cd daemon
+git clone https://github.com/CircuitPhantom/Daemon.git
+cd Daemon
 ./setup.sh
 ```
 `setup.sh` offers to install system packages with `sudo` (portaudio, playerctl, wl-clipboard, java for Signal), creates `venv/`, installs `requirements.txt`, and downloads the dashboard's JavaScript libraries to `static/lib/`. It asks before each step and is safe to run again. Options: `--no-system` (skip packages), `--models` (download the speech models now instead of on first start), `--service` (also install the background service), `-y` (no questions).
@@ -29,8 +29,8 @@ DAEMON_LLM_API_KEY=your-key-here
 Open `config.yaml` and set the provider and model:
 ```yaml
 llm:
-  base_url: https://integrate.api.nvidia.com/v1     # your provider's OpenAI-compatible address
-  model: nvidia/nemotron-3.5-lightning-30b-a3b      # a model that supports tool calling
+  base_url: https://api.groq.com/openai/v1     # your provider's OpenAI-compatible address
+  model: llama-3.3-70b-versatile                # a model that supports tool calling
 ```
 Everything else can stay at its default. Settings can also be changed in the dashboard (Settings); the file is then rewritten. See [Configuration](../README.md#configuration) for how `.env` and `config.yaml` work together.
 
