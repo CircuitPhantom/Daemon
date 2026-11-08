@@ -36,3 +36,6 @@ requirements.lock
 *.log
 *.png
 !tests/**/*.png
+
+!docs/images/*.png
+!docs/images/*.gif
