@@ -11,7 +11,7 @@ llm:
 
 | Provider | `base_url` | Notes |
 |---|---|---|
-| Anthropic | `https://api.anthropic.com/v1` | The default |
+| Anthropic | `https://api.anthropic.com/v1` | Might be slow because of thinking |
 | OpenAI | `https://api.openai.com/v1` | |
 | Groq | `https://api.groq.com/openai/v1` | Fast, generous free tier; also offers cloud speech-to-text |
 | NVIDIA | `https://integrate.api.nvidia.com/v1` | Hosted open models (Nemotron, Llama, ...). Free trial terms differ from paid ones, read them |
