@@ -39,3 +39,9 @@ requirements.lock
 
 !docs/images/*.png
 !docs/images/*.gif
+
+# site images
+!site/**/*.png
+!site/**/*.gif
+!site/**/*.jpg
+!site/**/*.webp
