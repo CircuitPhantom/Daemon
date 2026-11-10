@@ -7,6 +7,8 @@
 it answers with a cloud language model of your choice and uses tools on your behalf: run commands, read and write files, search the web,
 manage a calendar and reminders, play Spotify, call you on the phone, and (opt-in) use your desktop with mouse and keyboard.
 
+**Website:** https://circuitphantom.github.io/Daemon/
+
 > Status: personal project, shared as is. Linux only (developed on Arch + Hyprland, the server on Debian).
 
 ## Features
