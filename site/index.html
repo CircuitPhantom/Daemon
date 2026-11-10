@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daemon: a self-hosted assistant that talks, calls and does things</title>
+<meta name="description" content="Daemon is an open-source, self-hosted voice and chat assistant for Linux. Talk to it in your browser, on your phone, on Signal or on a phone call. It runs on your own server and uses tools on your computers.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<link rel="canonical" href="https://circuitphantom.github.io/Daemon/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Daemon: a self-hosted assistant that talks, calls and does things">
+<meta property="og:description" content="Open-source voice and chat assistant that runs on your own server. Tool calling, phone calls, Signal, wake word, opt-in desktop control. You choose the language model.">
+<meta property="og:url" content="https://circuitphantom.github.io/Daemon/">
+<meta property="og:image" content="https://circuitphantom.github.io/Daemon/assets/media/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Daemon: a self-hosted assistant that talks, calls, and actually does things on your computers.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@circuitphantom0">
+<meta name="twitter:title" content="Daemon: a self-hosted assistant that talks, calls and does things">
+<meta name="twitter:description" content="Open-source voice and chat assistant that runs on your own server. You choose the language model.">
+<meta name="twitter:image" content="https://circuitphantom.github.io/Daemon/assets/media/og.jpg">
+<link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/style.css">
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="Daemon, back to top">
+    <img src="assets/media/logo.png" width="26" height="26" alt="">
+    <span>Daemon</span>
+  </a>
+  <nav aria-label="Sections">
+    <a href="#demo">Demo</a>
+    <a href="#features">Features</a>
+    <a href="#how">How it fits</a>
+    <a href="#safety">Safety</a>
+    <a href="#limits">Good to know</a>
+  </nav>
+  <a class="btn btn-small" href="#quickstart">Quick start</a>
+</header>
+
+<main id="main">
+
+<!-- Hero -->
+<section class="hero" id="top">
+  <canvas class="sphere" id="sphere" aria-hidden="true"></canvas>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <h1 id="headline">A self-hosted assistant that talks, calls, and actually does things on your computers.</h1>
+    <p class="lede">Talk to it in your browser, on your phone, on Signal, or on a normal phone call. It runs on your own server; you choose the language model.</p>
+
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/CircuitPhantom/Daemon">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 .2a8 8 0 0 0-2.5 15.6c.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.3.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.500 7.500 0 0 1 4 0c1.500-1 2.200-.8 2.200-.8.5 1.100.2 1.900.1 2.100.5.5.8 1.200.8 2.100 0 3.100-1.900 3.800-3.600 4 .3.200.5.700.5 1.500v2.200c0 .2.100.5.500.4A8 8 0 0 0 8 .2Z"/></svg>
+        View on GitHub
+      </a>
+      <a class="btn" href="#quickstart">Quick start</a>
+    </div>
+
+    <ul class="badges" aria-label="Project facts">
+      <li>MIT license</li>
+      <li><a href="https://github.com/CircuitPhantom/Daemon/actions/workflows/tests.yml">Tests run on GitHub Actions</a></li>
+      <li>Linux only</li>
+    </ul>
+
+    <div class="say" id="say">
+      <p class="visually-hidden">Examples: say “call me when the build is done” and your phone rings; say “remind me at 18:00 to call mom” and a Signal message arrives at 18:00.</p>
+      <div class="say-bar" aria-hidden="true">
+        <span class="say-label">you:</span>
+        <span class="say-text" id="say-text">call me when the build is done</span><span class="caret"></span>
+      </div>
+      <div class="say-out" id="say-out" aria-hidden="true">
+        <code id="say-tool">call_me</code>
+        <span id="say-does">Your phone rings and Daemon reads you the result.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Demo -->
+<section class="section" id="demo">
+  <div class="wrap">
+    <div class="head reveal">
+      <h2>See it work</h2>
+      <p>One typed sentence: “open x.com and introduce yourself with a tweet.” Daemon opens the browser, looks at the screen, and writes the post with the mouse and keyboard. 82 seconds, no sound.</p>
+    </div>
+
+    <figure class="frame reveal">
+      <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i><span>demo.mp4</span></div>
+      <div class="video">
+        <video id="demo-video" controls preload="none" playsinline muted poster="assets/media/demo-poster.webp" width="1280" height="720" aria-label="Screen recording: Daemon is asked to open x.com and introduce itself, then controls the desktop to write the post.">
+          <source src="assets/media/demo.mp4" type="video/mp4">
+          <a href="assets/media/demo.mp4">Download the demo video (MP4)</a>
+        </video>
+        <button class="play" id="play" type="button" aria-label="Play the demo video">
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13l11-6.500z"/></svg>
+        </button>
+      </div>
+      <figcaption>Computer control is opt-in and asks for your OK before the first action of each turn.</figcaption>
+    </figure>
+
+    <figure class="shot reveal">
+      <picture>
+        <source srcset="assets/media/dashboard.webp" type="image/webp">
+        <img src="assets/media/dashboard.png" width="1920" height="1080" loading="lazy" decoding="async" alt="The Daemon web dashboard: a faint wireframe sphere above a message box with a Call button, example prompts such as “Check the disk usage”, and a list of enabled tools.">
+      </picture>
+      <figcaption>The dashboard. Type, talk, or press Call.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="head reveal">
+      <h2>What it can do</h2>
+      <p>Everything here is in the repository today. Nothing is a roadmap item.</p>
+    </div>
+
+    <div class="grid">
+      <article class="tile t-tools reveal">
+        <h3>It does things</h3>
+        <p>The model calls tools on your behalf: shell, files, web search, calendar, reminders, notes, Spotify. Scheduled tasks run on cron; background jobs let you keep talking while it researches.</p>
+        <div class="marquee" aria-hidden="true">
+          <div class="marquee-row"><div class="marquee-track">
+            <code>execute_command</code><code>read_file</code><code>web_search</code><code>fetch_url</code><code>calendar_add</code><code>remind_me</code><code>inbox_add</code><code>spotify_play</code><code>start_job</code><code>search_text</code>
+          </div></div>
+          <div class="marquee-row rev"><div class="marquee-track">
+            <code>call_me</code><code>send_message</code><code>media_control</code><code>clipboard_read</code><code>open_app</code><code>write_file</code><code>list_directory</code><code>volume</code><code>calendar_list</code><code>open_url</code>
+          </div></div>
+        </div>
+      </article>
+
+      <article class="tile t-phone reveal">
+        <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <h3>You can phone it, and it phones you</h3>
+        <p>Phone calls through Twilio. Talk hands-free with tools working mid-call, and talk over it to interrupt. It can also ring you when the build is done, or read you the morning plan.</p>
+        <p class="fine">Needs a paid Twilio number and one public HTTPS port for the webhook.</p>
+      </article>
+
+      <article class="tile t-desktop reveal">
+        <div class="screen" aria-hidden="true">
+          <span class="win win-a"></span><span class="win win-b"></span>
+          <span class="ptr"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M2 1l11 6.200-4.800 1.300L6.500 14z" fill="#fff" stroke="#000" stroke-width=".8"/></svg></span>
+        </div>
+        <h3>It can use your desktop, if you let it</h3>
+        <p>The model looks at a screenshot with a coordinate grid and uses the mouse and keyboard. Two switches, both off by default, plus an emergency stop file.</p>
+      </article>
+
+      <article class="tile t-private reveal">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.500 12 4l8 5.500V20H4z"/><path d="M9.500 20v-5.500h5V20"/></svg>
+        <h3>Self-hosted and private by default</h3>
+        <p>It runs on your server and you reach it over Tailscale. Nothing is exposed to the internet except the optional phone webhook. Whisper speech-to-text and the Kokoro voice run locally on CPU by default.</p>
+        <code class="listen"><span class="dot"></span>listening on 127.0.0.1:8000</code>
+      </article>
+
+      <article class="tile t-surfaces reveal">
+        <h3>Every chat surface</h3>
+        <p>Four ways in to the same assistant.</p>
+        <ul class="surfaces">
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.500" width="18" height="15" rx="2"/><path d="M3 9h18"/></svg>Web dashboard</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.500" width="10" height="19" rx="2.200"/><path d="M10.500 18.500h3"/></svg>Installable phone app with Share menu</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H10l-4.500 3.500V16H4z"/></svg>Signal bot</li>
+          <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.500 11.500a6.500 6.500 0 0 0 13 0M12 18v3"/></svg>Wake word, “hey daemon”</li>
+        </ul>
+      </article>
+
+      <article class="tile t-agent reveal">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.500" width="16" height="6" rx="1.500"/><path d="M7 6.500h.01M12 9.500v4"/><rect x="5.500" y="13.500" width="13" height="6" rx="1"/><path d="M3 21h18"/></svg>
+        <h3>Server and laptop agent</h3>
+        <p>Daemon lives on an always-on machine. When your laptop is on, it lends Daemon a microphone, speakers and hands. When it is off, everything else keeps working. One computer is enough to start.</p>
+      </article>
+
+      <article class="tile t-safe reveal">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.500 3v5.500c0 4.500-3.200 7.800-7.500 9.500-4.300-1.700-7.500-5-7.500-9.500V6z"/><path d="M8.800 12l2.300 2.300 4.200-4.600"/></svg>
+        <h3>Safe by design</h3>
+        <p>Tool profiles decide what the model may touch. Risky tools ask first. Scheduled tasks never get them at all. <a href="#safety">See the profiles</a></p>
+      </article>
+
+      <article class="tile t-model reveal">
+        <h3>Bring your own model</h3>
+        <p>Any OpenAI-compatible provider with tool calling works. Set a base URL, a model name and a key.</p>
+        <ul class="providers">
+          <li>Anthropic</li><li>OpenAI</li><li>Groq</li><li>NVIDIA</li><li>OpenRouter</li><li>Fireworks</li><li>Together</li><li>Google Gemini</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- How it fits together -->
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="head reveal">
+      <h2>How it fits together</h2>
+      <p>One server process. Your devices talk to it; it talks to the model you picked and, when the laptop is on, to the agent running there.</p>
+    </div>
+
+    <div class="map reveal" role="img" aria-label="Diagram: browser, phone app, Signal and phone calls connect to the Daemon server (FastAPI). The server sends requests to a cloud language model, and is linked in both directions with a laptop agent that provides microphone, speakers and desktop tools.">
+      <ul class="map-clients">
+        <li>Browser</li>
+        <li>Phone app</li>
+        <li>Signal</li>
+        <li>Phone call <small>through Twilio</small></li>
+      </ul>
+      <div class="wire w1"></div>
+      <div class="node map-server">
+        <strong>Daemon server</strong>
+        <span>FastAPI, port 8000</span>
+        <span class="node-sub">tools, memory, scheduler, speech-to-text, voice</span>
+      </div>
+      <div class="wire w2"></div>
+      <div class="node map-llm">
+        <strong>Cloud LLM</strong>
+        <span>OpenAI-compatible, your choice</span>
+      </div>
+      <div class="wire w3 both"><span>WebSocket + token</span></div>
+      <div class="node map-agent">
+        <strong>Laptop agent</strong>
+        <span>microphone, speakers, desktop tools</span>
+      </div>
+    </div>
+    <p class="note reveal">The laptop agent is only needed when the server runs somewhere else.</p>
+  </div>
+</section>
+
+<!-- Safety -->
+<section class="section" id="safety">
+  <div class="wrap">
+    <div class="head reveal">
+      <h2>Safety</h2>
+      <p>Daemon can run commands and control a desktop on behalf of a language model. Treat it accordingly. These are the controls it gives you.</p>
+    </div>
+
+    <div class="profiles reveal">
+      <fieldset class="seg">
+        <legend>Pick a tool profile to see what the model gets</legend>
+        <label><input type="radio" name="profile" value="Off"><span>Off</span></label>
+        <label><input type="radio" name="profile" value="Read only"><span>Read only</span></label>
+        <label><input type="radio" name="profile" value="Assistant" checked><span>Assistant</span></label>
+        <label><input type="radio" name="profile" value="Desktop"><span>Desktop</span></label>
+        <label><input type="radio" name="profile" value="Full"><span>Full</span></label>
+      </fieldset>
+      <p class="profile-desc" id="profile-desc" aria-live="polite">Every tool is listed below. Tools marked “asks first” wait for your approval.</p>
+      <div class="toolbox" id="toolbox">
+        <div><h4>Files</h4><code>read_file</code><code>list_directory</code><code>search_files</code><code>search_text</code><code class="ask">write_file</code><code class="ask">send_file</code></div>
+        <div><h4>Shell and system</h4><code class="ask">execute_command</code><code>system_info</code><code>get_time</code><code>calculate</code></div>
+        <div><h4>Web</h4><code>web_search</code><code>fetch_url</code></div>
+        <div><h4>Reminders and phone</h4><code>remind_me</code><code>list_reminders</code><code>cancel_reminder</code><code>send_message</code><code>call_me</code></div>
+        <div><h4>Calendar</h4><code>calendar_list</code><code>calendar_add</code><code>calendar_update</code><code>calendar_delete</code></div>
+        <div><h4>Inbox</h4><code>inbox_add</code><code>inbox_search</code><code>inbox_recent</code><code>inbox_delete</code></div>
+        <div><h4>Background work</h4><code>start_job</code></div>
+        <div><h4>Desktop</h4><code>media_control</code><code>volume</code><code>clipboard_read</code><code>clipboard_write</code><code>open_url</code><code>open_app</code></div>
+        <div><h4>Spotify</h4><code>spotify_play</code><code>spotify_devices</code><code>spotify_transfer</code></div>
+        <div><h4>Screen</h4><code class="ask">screenshot</code><code class="ask">computer</code></div>
+      </div>
+      <p class="legend"><code class="ask on">tool</code> asks for your approval first, and is never given to scheduled tasks or background jobs.</p>
+    </div>
+
+    <dl class="rules">
+      <div class="reveal">
+        <dt>Approval prompts</dt>
+        <dd>Risky tools such as <code>execute_command</code> and <code>write_file</code> wait for a yes, from the dashboard buttons or a reply on Signal.</dd>
+      </div>
+      <div class="reveal">
+        <dt>Two switches for computer control</dt>
+        <dd>The server must enable the <code>computer</code> tool and the laptop agent must be started with <code>--allow screen_input</code>. Both are off by default. <code>touch ~/.daemon-stop</code> refuses all mouse and keyboard input until you delete the file.</dd>
+      </div>
+      <div class="reveal">
+        <dt>Private network</dt>
+        <dd>The server listens on <code>127.0.0.1</code>. Reach it from your phone over Tailscale; never open port 8000 to the internet. Set a PIN for the dashboard.</dd>
+      </div>
+      <div class="reveal">
+        <dt>Secrets stay out of config</dt>
+        <dd>Keys and tokens live in <code>.env</code> with mode 600. Neither <code>.env</code> nor <code>config.yaml</code> is ever committed.</dd>
+      </div>
+    </dl>
+    <p class="note reveal">None of this makes a language model trustworthy. It limits what a mistake can reach.</p>
+  </div>
+</section>
+
+<!-- Quick start -->
+<section class="section" id="quickstart">
+  <div class="wrap qs">
+    <div class="head reveal">
+      <h2>Quick start</h2>
+      <p>You need Linux, Python 3.10 or newer, and an API key from an LLM provider that supports tool calling. The speech models take about 2 GB of disk and 2 to 4 GB of RAM. No GPU needed.</p>
+    </div>
+
+    <div class="term reveal">
+      <div class="term-bar">
+        <span aria-hidden="true">bash</span>
+        <button class="copy" id="copy" type="button">Copy commands</button>
+      </div>
+<pre id="cmds"><code><span class="ln" style="--i:0">git clone https://github.com/CircuitPhantom/Daemon.git</span>
+<span class="ln" style="--i:1">cd Daemon</span>
+<span class="ln" style="--i:2">./setup.sh</span>
+<span class="ln" style="--i:3">cp config.example.yaml config.yaml</span>
+<span class="ln" style="--i:4">cp .env.example .env &amp;&amp; chmod 600 .env</span>
+<span class="ln" style="--i:5">venv/bin/python doctor.py</span>
+<span class="ln" style="--i:6">./install-service.sh</span></code></pre>
+    </div>
+
+    <ol class="after reveal">
+      <li>Before the <code>doctor.py</code> step, put <code>DAEMON_LLM_API_KEY</code> in <code>.env</code> and set <code>llm.base_url</code> and <code>llm.model</code> in <code>config.yaml</code>.</li>
+      <li>Open <code>http://127.0.0.1:8000</code>. The first start downloads the speech models, which can take a few minutes.</li>
+    </ol>
+
+    <nav class="docs reveal" aria-label="Documentation on GitHub">
+      <h3>Guides on GitHub</h3>
+      <ul>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/getting-started.md">Getting started</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/llm-providers.md">LLM providers</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/voice.md">Voice and wake word</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/remote-access.md">Tailscale and the phone app</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/laptop-agent.md">Laptop agent</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/signal.md">Signal</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/phone-calls.md">Phone calls</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/spotify.md">Spotify</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/tasks.md">Scheduled tasks</a></li>
+        <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/docs/troubleshooting.md">Troubleshooting</a></li>
+      </ul>
+    </nav>
+  </div>
+</section>
+
+<!-- Good to know -->
+<section class="section" id="limits">
+  <div class="wrap">
+    <div class="head reveal">
+      <h2>Good to know</h2>
+      <p>Read this before you spend an evening on it.</p>
+    </div>
+    <ul class="limits">
+      <li class="reveal"><strong>The language model is a cloud API.</strong> <span>Your prompts and tool results go to the provider you choose. Local LLMs are untested.</span></li>
+      <li class="reveal"><strong>Linux only.</strong> <span>Developed on Arch with Hyprland, with the server on Debian. Other setups are untested.</span></li>
+      <li class="reveal"><strong>No Docker image yet.</strong> <span>It is a native install with <code>./setup.sh</code>.</span></li>
+      <li class="reveal"><strong>Early release.</strong> <span>The author uses it every day. Expect rough edges.</span></li>
+      <li class="reveal"><strong>Phone calls cost money.</strong> <span>They need a paid Twilio number.</span></li>
+      <li class="reveal"><strong>Computer control depends on the model.</strong> <span>It needs a vision-capable one, and it is only as good as that model.</span></li>
+      <li class="reveal"><strong>Written with a lot of AI help.</strong> <span>Daemon was built with an AI coding assistant (Claude), then tested and reviewed by the author. There is a test suite and CI.</span></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p class="footer-brand"><img src="assets/media/logo.png" width="30" height="30" alt="">Daemon</p>
+      <p>Open source under the MIT license. Built with a lot of help from an AI coding assistant, then tested and reviewed by the author.</p>
+    </div>
+    <ul>
+      <li><a href="https://github.com/CircuitPhantom/Daemon">GitHub repository</a></li>
+      <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/LICENSE">MIT license</a></li>
+      <li><a href="https://github.com/CircuitPhantom">CircuitPhantom on GitHub</a></li>
+      <li><a href="https://x.com/circuitphantom0">@circuitphantom0 on X</a></li>
+    </ul>
+    <p class="tm">Names are trademarks of their owners; Daemon is not affiliated with them. This site makes no third-party requests and sets no cookies. Fonts: Bricolage Grotesque, Geist and Geist Mono, under the SIL Open Font License.</p>
+  </div>
+</footer>
+
+<script src="assets/main.js" defer></script>
+</body>
+</html>

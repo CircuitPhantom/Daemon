@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://circuitphantom.github.io/Daemon/sitemap.xml
