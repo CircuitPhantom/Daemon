@@ -87,6 +87,15 @@ with TestClient(server.app) as c:
     # wake settings validation + start attempt (no sounddevice here -> error status)
     ok(c.post("/api/settings", json={"wake":{"engine":"bad"}}).status_code==400, "engine validate")
     s = c.post("/api/settings", json={"wake":{"enabled":True,"phrase":"hey daemon"}}).json(); time.sleep(0.5)
-    st = c.get("/api/wake").json(); print("wake status:", st); ok(not st["running"] and "sounddevice" in st["error"], st)
+    st = c.get("/api/wake").json(); print("wake status:", st)
+    try:
+        import sounddevice; have_sd, sd_err = True, ""   # Windows wheels bundle PortAudio, Linux CI has none
+    except Exception as e:
+        have_sd, sd_err = False, repr(e)
+    for _ in range(20):                                 # the wake thread needs a moment: it ends up listening or with an error
+        if st["error"] or not st["running"]: break
+        time.sleep(0.25); st = c.get("/api/wake").json()
+    ok(st["engine"] == "whisper" and (st["running"] or st["error"]), (st, sd_err))
+    if not have_sd and os.name != "nt": ok(not st["running"] and "sounddevice" in st["error"], (st, sd_err))
     c.post("/api/settings", json={"wake":{"enabled":False}})
 print("STREAM BACKEND OK")
