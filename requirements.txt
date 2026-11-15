@@ -16,3 +16,5 @@ edge-tts               # free Edge voice
 miniaudio              # decodes the Edge voice (MP3)
 pillow                 # shrinks photos you send before the model sees them
 pypdf                  # reads the text of PDFs you send
+tzdata; sys_platform == "win32"      # time zone names (Europe/Istanbul) for the scheduler: Windows has no zoneinfo database
+psutil; sys_platform == "win32"      # system_info (memory, CPU, battery) on Windows

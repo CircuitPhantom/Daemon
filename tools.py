@@ -16,7 +16,6 @@ import os
 import platform_support
 import re
 import shutil
-import signal
 import socket
 import subprocess
 import threading
@@ -94,10 +93,7 @@ def execute_command(cmnd: str, where: str = "") -> str:
       output: Combined stdout and stderr
     """
     try:
-        p = subprocess.Popen(
-            cmnd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            stdin=subprocess.DEVNULL, start_new_session=True,
-        )
+        p = platform_support.start_shell(cmnd)
     except Exception as e:
         return f"Error: {e}"
     buf = bytearray()
@@ -106,10 +102,7 @@ def execute_command(cmnd: str, where: str = "") -> str:
     try:
         p.wait(timeout=CMD_TIMEOUT)          # waits for the shell itself, not for programs it left running
     except subprocess.TimeoutExpired:
-        try:
-            os.killpg(p.pid, signal.SIGKILL)       # also kills anything the command started
-        except ProcessLookupError:
-            pass
+        platform_support.kill_tree(p)              # also kills anything the command started
         p.wait()
         reader.join(1)
         out = bytes(buf).decode("utf-8", "replace").strip()
@@ -223,20 +216,51 @@ def search_text(text: str, path: str) -> str:
         return f"Error: {path} does not exist"
     cmd = ["grep", "-rIniF", "--max-count=3", "-e", text] + [f"--exclude-dir={d}" for d in _SKIP_DIRS] + ["--", str(root)]
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=15, stdin=subprocess.DEVNULL)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=15, stdin=subprocess.DEVNULL,
+                           creationflags=platform_support.NO_WINDOW)
     except subprocess.TimeoutExpired:
         return "Error: search took too long, use a smaller folder"
     except FileNotFoundError:
-        return "Error: grep is not installed"
+        return _grep_python(text, root)                       # no grep (Windows): same answer, slower
     lines = [l[:200] for l in r.stdout.splitlines()[:30]]
     return "\n".join(lines) or "No matches found"
 
 
-def _human(n):
-    for u in ("B", "KB", "MB", "GB", "TB"):
-        if n < 1024 or u == "TB":
-            return f"{n:.0f} {u}" if u == "B" else f"{n:.1f} {u}"
-        n /= 1024
+def _walk_files(root):
+    for dp, dn, fn in os.walk(root):
+        dn[:] = [d for d in dn if d not in _SKIP_DIRS]
+        for n in fn:
+            yield Path(dp) / n
+
+
+def _grep_python(text, root, max_lines=30, max_per_file=3, timeout=15):
+    """What `grep -rIniF --max-count=3` prints (file:line:text), in plain Python: skips binary files and _SKIP_DIRS."""
+    needle, out, deadline = text.lower(), [], time.monotonic() + timeout
+    files = [root] if root.is_file() else _walk_files(root)
+    for f in files:
+        if time.monotonic() > deadline:
+            return "Error: search took too long, use a smaller folder"
+        try:
+            with open(f, "rb") as fh:
+                if b"\0" in fh.read(4096):                     # binary (grep -I)
+                    continue
+                fh.seek(0)
+                found = 0
+                for n, raw in enumerate(fh, 1):
+                    line = raw.decode("utf-8", "replace").rstrip("\r\n")
+                    if needle in line.lower():
+                        out.append(f"{f}:{n}:{line}"[:200])
+                        found += 1
+                        if found >= max_per_file or len(out) >= max_lines:
+                            break
+        except OSError:
+            continue
+        if len(out) >= max_lines:
+            break
+    return "\n".join(out) or "No matches found"
+
+
+_human = platform_support.human
 
 
 # ───────────────────────── system / time / math ─────────────────────────
@@ -250,50 +274,7 @@ def system_info(where: str = "") -> str:
     Returns:
       output: A short readable report
     """
-    out = []
-    try:
-        up = float(open("/proc/uptime", encoding="utf-8").read().split()[0])
-        d, h, m = int(up // 86400), int(up % 86400 // 3600), int(up % 3600 // 60)
-        out.append(f"Uptime: {d} d {h} h {m} min")
-    except Exception:
-        pass
-    try:
-        l1, l5, l15 = os.getloadavg()
-        out.append(f"Load average: {l1:.2f} {l5:.2f} {l15:.2f} on {os.cpu_count()} cores")
-    except Exception:
-        pass
-    try:
-        mem = {k: int(v.split()[0]) * 1024 for k, v in (l.split(":", 1) for l in open("/proc/meminfo", encoding="utf-8"))}
-        used = mem["MemTotal"] - mem["MemAvailable"]
-        out.append(f"Memory: {_human(used)} used of {_human(mem['MemTotal'])} ({used * 100 // mem['MemTotal']}%)")
-        if mem.get("SwapTotal"):
-            out.append(f"Swap: {_human(mem['SwapTotal'] - mem['SwapFree'])} used of {_human(mem['SwapTotal'])}")
-    except Exception:
-        pass
-    for mount in dict.fromkeys(["/", str(Path.home())]):
-        try:
-            du = shutil.disk_usage(mount)
-            out.append(f"Disk {mount}: {_human(du.used)} used of {_human(du.total)} ({du.used * 100 // du.total}%), {_human(du.free)} free")
-        except Exception:
-            pass
-    temps = []
-    for z in sorted(Path("/sys/class/thermal").glob("thermal_zone*")):
-        try:
-            temps.append(int((z / "temp").read_text(encoding="utf-8")) / 1000)
-        except Exception:
-            pass
-    if temps:
-        out.append(f"Temperature: {max(temps):.0f} °C (hottest sensor)")
-    for b in sorted(Path("/sys/class/power_supply").glob("BAT*")):
-        try:
-            out.append(f"Battery: {(b / 'capacity').read_text(encoding='utf-8').strip()}% ({(b / 'status').read_text(encoding='utf-8').strip()})")
-        except Exception:
-            pass
-    try:
-        ps = subprocess.run(["ps", "-eo", "comm,%cpu,%mem", "--sort=-%cpu"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=5).stdout.splitlines()[1:4]
-        out.append("Busiest processes (name, %CPU, %mem): " + "; ".join(" ".join(l.split()) for l in ps))
-    except Exception:
-        pass
+    out = platform_support.system_info()
     return "\n".join(out) or "No system information available"
 
 

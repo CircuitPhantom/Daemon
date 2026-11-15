@@ -10,6 +10,8 @@ This gets Daemon running on one Linux computer, with the dashboard in your brows
 - Optional: a microphone and speakers (voice), a phone, a Tailscale account (reach it from the phone).
 
 ## 1. Install
+> **Windows:** use `.\setup.ps1` instead of `./setup.sh` and see [Daemon on Windows](windows.md) (what works, how to run it at log on).
+
 ```bash
 git clone https://github.com/CircuitPhantom/Daemon.git
 cd Daemon

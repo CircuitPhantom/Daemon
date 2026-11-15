@@ -25,6 +25,7 @@ import collections
 import os
 import json
 import queue
+import platform_support
 import re
 import shutil
 import subprocess
@@ -174,14 +175,17 @@ class SignalBot:
             p.stdin.close()
         except Exception:
             pass
-        try:
-            p.terminate()
-            p.wait(timeout=5)
-        except Exception:
+        if platform_support.IS_WINDOWS:
+            platform_support.kill_tree(p)                 # signal-cli.bat starts java as a child: end the whole tree
+        else:
             try:
-                p.kill()
+                p.terminate()
+                p.wait(timeout=5)
             except Exception:
-                pass
+                try:
+                    p.kill()
+                except Exception:
+                    pass
         self._fail_pending("signal-cli stopped")
 
     def _supervise(self):
@@ -231,9 +235,9 @@ class SignalBot:
             return False
         try:
             p = subprocess.Popen(
-                [c["cli"], "-a", c["account"], "jsonRpc"],
+                [shutil.which(c["cli"]) or c["cli"], "-a", c["account"], "jsonRpc"],      # the full path: on Windows signal-cli is signal-cli.bat
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                text=True, encoding="utf-8", errors="replace", bufsize=1,
+                text=True, encoding="utf-8", errors="replace", bufsize=1, creationflags=platform_support.NO_WINDOW,
             )
         except Exception as e:
             self.error = f"could not start {c['cli']}: {e}"

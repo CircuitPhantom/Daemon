@@ -5,6 +5,7 @@ Used by conversation.py (every turn), the phone bridge, the wake word listener a
 """
 import io
 import os
+import platform_support
 import re
 import shutil
 import subprocess
@@ -305,7 +306,7 @@ def decode_audio_bytes(data, rate=16000):
     if not shutil.which("ffmpeg"):
         raise RuntimeError(f"could not decode the audio ({err})")
     p = subprocess.run(["ffmpeg", "-v", "error", "-i", "pipe:0", "-f", "f32le", "-ac", "1", "-ar", str(rate), "pipe:1"],
-                       input=data, capture_output=True, timeout=60)
+                       input=data, capture_output=True, timeout=60, creationflags=platform_support.NO_WINDOW)
     if p.returncode or not p.stdout:
         raise RuntimeError("could not decode the audio: " + p.stderr.decode("utf-8", "replace")[:120])
     return np.frombuffer(p.stdout, dtype=np.float32)

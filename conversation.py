@@ -8,6 +8,7 @@ import base64
 import io
 import json
 import os
+import platform_support
 import queue
 import re
 import threading
@@ -69,7 +70,7 @@ def system_msg(speak=False):
     """System prompt + saved memory. A fresh dict, so tasks (which use model_config directly) never get memory."""
     content = model_config.system_prompt["content"]
     mem = memstore.prompt_block()
-    desk = _desktop_hint()
+    desk = "\n\n".join(x for x in (_desktop_hint(), platform_support.shell_hint()) if x)
     return {"role": "system", "content": content + ("\n\n" + desk if desk else "") + ("\n\n" + mem if mem else "") + ("\n\n" + voice.voice_block() if speak else "")}
 
 

@@ -15,7 +15,7 @@ with TestClient(server.app) as c:
     ok(c.post("/api/auth/pin",json={"pin":" 1234"}).status_code==400, "spaces")
     r=c.post("/api/auth/pin",json={"pin":"4821"}); ok(r.status_code==200 and "daemon_session" in r.headers["set-cookie"] and "HttpOnly" in r.headers["set-cookie"] and "SameSite=Strict" in r.headers["set-cookie"] and "Secure" not in r.headers["set-cookie"], r.headers)
     cfgtxt=open("cfg17.yaml").read(); ok("4821" not in cfgtxt and "scrypt$" in cfgtxt and "enabled: true" in cfgtxt, "hash only")
-    ok(oct(os.stat("cfg17.yaml").st_mode)[-3:]=="600", "private config")
+    ok(os.name=="nt" or oct(os.stat("cfg17.yaml").st_mode)[-3:]=="600", "private config")
     ok(c.get("/api/settings").status_code==200, "this browser stays in")
     anon=TestClient(server.app)
     ok("Unlock" in anon.get("/").text and anon.get("/").status_code==200, "login page")

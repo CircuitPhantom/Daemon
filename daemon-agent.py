@@ -162,6 +162,8 @@ def ensure_session_env():
     DISPLAY: apps then die at once ("cannot open display"). Look the running session up and fill in what is missing (cheap).
     Returns the names it changed."""
     changed = []
+    if platform_support.IS_WINDOWS:
+        return changed                                  # no Wayland/X11/D-Bus session variables on Windows
     rt = os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
     if not os.path.isdir(rt):
         return changed

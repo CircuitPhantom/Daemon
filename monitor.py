@@ -4,6 +4,7 @@ and the check that the dashboard page and the server belong together.
 Used by routines.py (alerts), conversation.py (Signal /status) and the /api/health endpoint.
 """
 import os
+import platform_support
 import re
 import shutil
 import subprocess
@@ -39,7 +40,7 @@ def health():
 
 def _cmd(cmd, timeout=6):
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, creationflags=platform_support.NO_WINDOW)
         return r.returncode, (r.stdout + r.stderr).strip()
     except Exception as e:
         return 1, str(e)
@@ -62,14 +63,7 @@ def newest_backup():
 
 
 def _mem_available_percent():
-    try:
-        info = {}
-        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
-            k, _, v = line.partition(":")
-            info[k] = int(v.split()[0])
-        return 100.0 * info["MemAvailable"] / info["MemTotal"]
-    except Exception:
-        return None
+    return platform_support.mem_available_percent()
 
 
 def checks():
@@ -92,7 +86,7 @@ def checks():
     try:
         load = os.getloadavg()[0] / (os.cpu_count() or 1)
         add("load", True, f"load: {load:.1f} per core", alert=False)
-    except OSError:
+    except (OSError, AttributeError):           # no load average on Windows
         pass
 
     st = llm.status()
@@ -116,8 +110,8 @@ def checks():
     age = newest_backup()
     if age is not None:
         add("backup", age <= care["backup_max_hours"], f"last backup: {age:.0f} h ago" if age >= 1 else "last backup: under an hour ago")
-    elif _cmd(["systemctl", "--user", "is-enabled", "daemon-backup.timer"])[0] == 0:       # the daily backup is set up but nothing came out of it
-        add("backup", False, "the daily backup is on, but ~/daemon-backups has no backup yet (check: journalctl --user -u daemon-backup)")
+    elif platform_support.backup_scheduled():       # the daily backup is set up but nothing came out of it
+        add("backup", False, "the daily backup is on, but ~/daemon-backups has no backup yet (check: " + ("Get-ScheduledTaskInfo -TaskName 'Daemon Backup'" if platform_support.IS_WINDOWS else "journalctl --user -u daemon-backup") + ")")
 
     if shutil.which("tailscale"):
         code, _ = _cmd(["tailscale", "status"])

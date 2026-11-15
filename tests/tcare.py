@@ -39,8 +39,8 @@ scheduler.send_message=lambda t: (sent.append(t), (True,"ok"))[1]; ok(len(routin
 mc.care["disk_free_percent"]=1; routines.watch_once()
 # backup age
 os.makedirs("bk41"); ok(not [c for c in monitor.checks() if c["key"]=="backup"], "an empty folder alone is no problem (no timer)")
-real_cmd=monitor._cmd; monitor._cmd=lambda c,t=6:(0,"enabled") if "is-enabled" in c else real_cmd(c,t)
-ok([c for c in monitor.checks() if c["key"]=="backup"][0]["ok"] is False, "timer on but no backup"); monitor._cmd=real_cmd
+real_sched=monitor.platform_support.backup_scheduled; monitor.platform_support.backup_scheduled=lambda:True
+ok([c for c in monitor.checks() if c["key"]=="backup"][0]["ok"] is False, "timer on but no backup"); monitor.platform_support.backup_scheduled=real_sched
 open("bk41/daemon-1.tar.gz","w").write("x"); ok([c for c in monitor.checks() if c["key"]=="backup"][0]["ok"], "fresh backup")
 old=time.time()-60*3600; os.utime("bk41/daemon-1.tar.gz",(old,old)); ok(not [c for c in monitor.checks() if c["key"]=="backup"][0]["ok"], "old backup")
 shutil.rmtree("bk41")
@@ -87,6 +87,7 @@ ok(hs("/forget zzzzzz")=="No memory with that id.", "unknown id"); ok(hs(f"/forg
 ok("Saved to the inbox" in hs("/inbox hello world"), "inbox still works"); ok("hello" in hs("/find hello"), "find alias")
 ok(hs("/new")=="Started a new chat.", "new chat")
 ok("reply" in hs("/nosuchcommand hi") or True, "unknown slash goes to the model")
+if os.name=="nt": print("note: the screenshot part needs Linux tools (grim, xdotool); Windows has its own tests"); print("ok"); sys.exit(0)
 # /ekran
 os.makedirs("fakeshot",exist_ok=True)
 from PIL import Image

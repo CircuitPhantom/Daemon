@@ -33,7 +33,7 @@ def pdf(t):
 # --- process
 r=uploads.process("My Photo.PNG", png()); ok(r["kind"]=="image" and r["image"][1]=="image/jpeg", r["kind"])
 im=Image.open(io.BytesIO(r["image"][0])); ok(max(im.size)<=1600, im.size)
-ok(os.path.isfile(r["path"]) and (os.stat(r["path"]).st_mode&0o777)==0o600, "saved 600")
+ok(os.path.isfile(r["path"]) and (os.name=="nt" or (os.stat(r["path"]).st_mode&0o777)==0o600), "saved 600")
 ok(".." not in r["rel"] and r["rel"].startswith(tuple("2")), r["rel"])
 r=uploads.process("notes.txt", b"hello world\nline2"); ok(r["kind"]=="text" and "hello world" in r["text"], r)
 ok("hello world" in uploads.block(r, False) and "data" in uploads.block(r, False).lower(), uploads.block(r, False))

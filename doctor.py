@@ -16,6 +16,13 @@ from pathlib import Path
 platform_support.setup_console()
 
 HERE = Path(__file__).resolve().parent
+WIN = platform_support.IS_WINDOWS
+SETUP = ".\\setup.ps1" if WIN else "./setup.sh"
+
+
+def pick(linux, windows):
+    return windows if WIN else linux
+
 sys.path.insert(0, str(HERE))
 OK, BAD, WARN = "\033[32m✓\033[0m", "\033[31m✗\033[0m", "\033[33m!\033[0m"
 bad = warn = 0
@@ -54,8 +61,8 @@ for mod, pip, needed in (("fastapi", "fastapi", 1), ("uvicorn", "uvicorn[standar
 
 print("\nFiles")
 for f in ("three.min.js", "marked.min.js", "highlight.min.js", "github-dark.min.css"):
-    show(OK if (HERE / "static/lib" / f).stat().st_size > 1000 else BAD, f"static/lib/{f}", "run ./setup.sh to download it") if (HERE / "static/lib" / f).exists() \
-        else show(BAD, f"static/lib/{f} missing", "run ./setup.sh to download it")
+    show(OK if (HERE / "static/lib" / f).stat().st_size > 1000 else BAD, f"static/lib/{f}", "run " + SETUP + " to download it") if (HERE / "static/lib" / f).exists() \
+        else show(BAD, f"static/lib/{f} missing", "run " + SETUP + " to download it")
 show(OK if (HERE / "index.html").exists() else BAD, "index.html")
 try:
     import monitor
@@ -71,7 +78,7 @@ show(WARN if copies else OK, "no browser copies like name(1).py" if not copies e
 print("\nSettings")
 try:
     import model_config as mc
-    show(OK if mc.CONFIG_PATH.exists() else WARN, f"config: {mc.CONFIG_PATH}", "no config.yaml yet: defaults are used (restore your backup with ./setup.sh --restore FILE)")
+    show(OK if mc.CONFIG_PATH.exists() else WARN, f"config: {mc.CONFIG_PATH}", "no config.yaml yet: defaults are used (restore your backup with " + SETUP + " --restore FILE)")
     es = mc.env_status()
     if es["found"] or es["refs"] or es["auto"]:
         show(BAD if es["missing"] else OK, f"secrets: {es['names']} values in {mc.ENV_PATH.name}, {es['refs']} used as ${{NAME}}, {es['auto']} by DAEMON_<SECTION>_<FIELD>"
@@ -89,9 +96,9 @@ if mc.stt["device"] == "cuda":
     show(OK if shutil.which("nvidia-smi") else WARN, "stt.device is cuda", "no NVIDIA GPU found here: set stt.device: cpu and compute_type: int8")
 
 print("\nDesktop tools")
-for label, cmds, need in (("audio player", ("pw-play", "paplay", "aplay"), 0), ("media control", ("playerctl",), 0),
+for label, cmds, need in (() if WIN else (("audio player", ("pw-play", "paplay", "aplay"), 0), ("media control", ("playerctl",), 0),
                           ("clipboard", ("wl-copy", "xclip", "xsel"), 0), ("volume", ("wpctl", "pactl"), 0),
-                          ("open links", ("xdg-open",), 0)):
+                          ("open links", ("xdg-open",), 0))):
     found = next((c for c in cmds if shutil.which(c)), None)
     show(OK if found else WARN, f"{label}: {found or ' / '.join(cmds) + ' not found'}", "install one of them (see MIGRATION.md)")
 
@@ -101,12 +108,12 @@ if mc.signal_cfg["enabled"]:
     if not shutil.which(cli):
         show(BAD, f"{cli} not found", "install signal-cli")
     elif not shutil.which("java"):
-        show(BAD, "java not found", "install a JDK (Arch: sudo pacman -S jdk-openjdk; archlinux-java set java-XX-openjdk)")
+        show(BAD, "java not found", pick("install a JDK (Arch: sudo pacman -S jdk-openjdk; archlinux-java set java-XX-openjdk)", "install a JDK: winget install EclipseAdoptium.Temurin.21.JDK"))
     else:
-        code, out = run([cli, "listAccounts"])
+        code, out = run([shutil.which(cli) or cli, "listAccounts"])
         acc = str(mc.signal_cfg["account"]).lstrip("+")
         show(OK if code == 0 and acc and acc in out.replace("+", "") else BAD, f"account {mc.signal_cfg['account']} registered here",
-             "restore the Signal data from your backup (./setup.sh --restore FILE) or register again. Output: " + out[:120])
+             "restore the Signal data from your backup (" + SETUP + " --restore FILE) or register again. Output: " + out[:120])
     show(OK if mc.signal_cfg["allowed"] else WARN, "signal.allowed set", "who may chat with Daemon (your number or UUID)")
 else:
     show(WARN, "signal is off (signal.enabled: false)")
@@ -118,10 +125,10 @@ if n["twilio_sid"] and n["twilio_token"]:
     if mc.phone_cfg["enabled"]:
         url = mc.phone_cfg["public_url"]
         show(OK if url.startswith("https://") else BAD, f"phone.public_url = {url or '(empty)'}", "your Tailscale Funnel address, e.g. https://NAME.tailnet.ts.net:8443")
-        show(OK if shutil.which("tailscale") else BAD, "tailscale installed", "install Tailscale and run: sudo tailscale up")
+        show(OK if shutil.which("tailscale") else BAD, "tailscale installed", pick("install Tailscale and run: sudo tailscale up", "install Tailscale (winget install Tailscale.Tailscale) and sign in"))
         if shutil.which("tailscale"):
             code, out = run(["tailscale", "status"], 10)
-            show(OK if code == 0 else BAD, "tailscale is connected", "sudo tailscale up")
+            show(OK if code == 0 else BAD, "tailscale is connected", pick("sudo tailscale up", "open Tailscale in the tray and sign in"))
         show(WARN, "Twilio: set the incoming-call webhook to " + (url + "/phone/incoming" if url else "<public_url>/phone/incoming"), "Twilio console > Phone Numbers > your number > Voice > A call comes in")
 else:
     show(WARN, "Twilio is not set up (notify.twilio_*), phone calls are off")
@@ -143,14 +150,14 @@ if agent_conf.exists():
         show(OK, "this laptop reaches " + c["server"] + " and the token is accepted")
     except Exception as e:
         show(BAD, f"this laptop cannot use {c['server']}: {e}", "check the address (the one you open the dashboard with), the token, and satellite.enabled on the server")
-    code, out = run(["systemctl", "--user", "is-active", "daemon-agent.service"], 5)
-    show(OK if out == "active" else WARN, f"daemon-agent service: {out or 'not installed'}", "./setup-agent.sh")
+    out = platform_support.service_state("daemon-agent")
+    show(OK if out == "active" else WARN, f"daemon-agent {'task' if WIN else 'service'}: {out or 'not installed'}", pick("./setup-agent.sh", ".\\setup-agent.ps1"))
 elif not mc.satellite["enabled"]:
     show(OK, "single-computer setup (no laptop agent)")
 
 print("\nService")
-code, out = run(["systemctl", "--user", "is-active", "daemon.service"], 5)
-show(OK if out == "active" else WARN, f"daemon service: {out or 'not installed'}", "./install-service.sh")
+out = platform_support.service_state("daemon")
+show(OK if out == "active" else WARN, f"daemon {'task' if WIN else 'service'}: {out or 'not installed'}", pick("./install-service.sh", ".\\install-service.ps1"))
 s = socket.socket()
 s.settimeout(1)
 busy = s.connect_ex(("127.0.0.1", int(os.environ.get("DAEMON_PORT", 8000)))) == 0

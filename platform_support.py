@@ -6,6 +6,7 @@ import sys
 import time
 
 IS_WINDOWS = sys.platform == "win32"
+NO_WINDOW = 0x08000000 if IS_WINDOWS else 0          # subprocess creationflags: no console window flashing up (0 elsewhere)
 
 
 def setup_console():
@@ -37,3 +38,54 @@ def readable_by_others(path):
     if IS_WINDOWS:
         return False
     return bool(os.stat(path).st_mode & 0o077)
+
+
+# ── per-OS backend (platform_linux.py / platform_windows.py, loaded on first use) ──
+def human(n):
+    for u in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1024 or u == "TB":
+            return f"{n:.0f} {u}" if u == "B" else f"{n:.1f} {u}"
+        n /= 1024
+
+
+def backend():
+    if IS_WINDOWS:
+        import platform_windows as b
+    else:
+        import platform_linux as b
+    return b
+
+
+def start_shell(cmnd):
+    """Starts a shell command with stdout and stderr in one pipe, in its own process group. Linux: sh; Windows: PowerShell."""
+    return backend().start_shell(cmnd)
+
+
+def kill_tree(proc):
+    """Kills the process and everything it started."""
+    backend().kill_tree(proc)
+
+
+def system_info():
+    """Report lines for the system_info tool (uptime, load, memory, disks, temperature, battery, busiest processes)."""
+    return backend().system_info()
+
+
+def mem_available_percent():
+    """Free memory in percent, or None when unknown."""
+    return backend().mem_available_percent()
+
+
+def service_state(name):
+    """'active' / 'inactive' / 'not installed' for the background job called `name` ('daemon', 'daemon-agent'), or '' when unknown."""
+    return backend().service_state(name)
+
+
+def backup_scheduled():
+    """True when the daily backup job is installed (systemd timer on Linux, scheduled task on Windows)."""
+    return backend().backup_scheduled()
+
+
+def shell_hint():
+    """One line for the model about the shell execute_command uses on this computer ('' on Linux, where it is the usual sh)."""
+    return backend().SHELL_HINT

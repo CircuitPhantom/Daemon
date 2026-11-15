@@ -10,7 +10,7 @@ for f in ("cfg31.yaml","mem31.json","rem31.json","sig_in.txt","sig_sent.txt","in
 shutil.rmtree("chats31", ignore_errors=True); shutil.rmtree(D, ignore_errors=True)
 os.makedirs(D+"/notes")
 open(D+"/notes/shopping.txt","w").write("milk\neggs\n")
-open("/tmp/secret31.txt","w").write("top secret")
+import tempfile; SECRET=os.path.join(tempfile.gettempdir(),"secret31.txt"); open(SECRET,"w").write("top secret")
 def ok(c,m=""):
     if not c: print("FAIL",m); sys.exit(1)
 def wait(cond, t=15):
@@ -76,12 +76,13 @@ with TestClient(server.app) as client:
     turns=client.get("/api/chats/current").json()["chat"]["turns"]; ok(turns[-1]["out_files"][0]["name"]=="shopping.txt", turns[-1].keys())
     # --- send_file: where=phone -> Signal attachment with clean name
     n=len(sent()); ev=say("sendfile:file=notes/shopping.txt;where=phone"); ok(wait(lambda: len(sent())>n), "phone send")
-    sp=sent()[-1]; ok(sp["attachment"] and sp["attachment"][0].endswith("/shopping.txt"), sp)
+    sp=sent()[-1]; ok(sp["attachment"] and sp["attachment"][0].replace("\\","/").endswith("/shopping.txt"), sp)
     ok(not os.path.exists(os.path.dirname(sp["attachment"][0])), "temp removed")
     # --- security: outside the folder is refused
-    for bad in ("/tmp/secret31.txt","../secret31.txt","/etc/passwd","notes/../../secret31.txt","nope.txt"):
+    for bad in (SECRET,"../secret31.txt","/etc/passwd","notes/../../secret31.txt","nope.txt"):
         out=tools.send_file(file=bad); ok(out.startswith("Error"), (bad,out))
-    os.symlink("/tmp/secret31.txt", D+"/link.txt"); ok(tools.send_file(file="link.txt").startswith("Error"), "symlink escape")
+    try: os.symlink(SECRET, D+"/link.txt"); ok(tools.send_file(file="link.txt").startswith("Error"), "symlink escape")
+    except (OSError, NotImplementedError): print("note: no symlink right on this system, symlink test skipped")
     for bad in ("../secret31.txt","..%2Fsecret31.txt","%2e%2e/%2e%2e/etc/passwd","link.txt","/etc/passwd"):
         ok(client.get("/api/dl/"+bad).status_code==404, bad)
     # uploaded file can be sent too

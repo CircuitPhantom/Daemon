@@ -18,6 +18,7 @@ The "Local voice only" switch of the dashboard turns this off as well.
 """
 import asyncio
 import io
+import platform_support
 import subprocess
 import threading
 import time
@@ -124,7 +125,7 @@ def _decode(mp3, rate=24000):
         pass
     try:
         p = subprocess.run(["ffmpeg", "-v", "error", "-i", "pipe:0", "-f", "s16le", "-ac", "1", "-ar", str(rate), "pipe:1"],
-                           input=mp3, capture_output=True, timeout=20)
+                           input=mp3, capture_output=True, timeout=20, creationflags=platform_support.NO_WINDOW)
     except FileNotFoundError:
         raise Missing("no MP3 decoder: pip install miniaudio (or install ffmpeg)") from None
     if p.returncode or not p.stdout:

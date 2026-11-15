@@ -27,3 +27,6 @@ journalctl --user -u daemon-agent -f      # laptop agent
 | `open_app` fails | Add the real command in `app_aliases` (e.g. `browser: firefox`) |
 
 Still stuck? Open an issue with the output of `doctor.py` and the relevant log lines. Remove keys, tokens and phone numbers first.
+
+## Windows
+Problems that only happen on Windows (console letters, `signal-cli`, the background task, missing `ffmpeg`) are in [Daemon on Windows](windows.md#troubleshooting).

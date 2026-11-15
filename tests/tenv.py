@@ -38,7 +38,7 @@ sys.argv=["x"]; s.main(); ok("sk-secret" in open(d+"/config.yaml").read(), "dry 
 sys.argv=["x","--apply"]; s.main()
 c=open(d+"/config.yaml").read(); e=open(d+"/.env").read()
 ok("api_key: ${DAEMON_LLM_API_KEY}" in c and "keepme" in c and "twilio_token: ${DAEMON_NOTIFY_TWILIO_TOKEN}" in c and "sk-secret" not in c, c)
-ok("DAEMON_LLM_API_KEY=sk-secret" in e and 'DAEMON_NOTIFY_TWILIO_TOKEN="tok 1"' in e and oct(os.stat(d+"/.env").st_mode)[-3:]=="600", e)
+ok("DAEMON_LLM_API_KEY=sk-secret" in e and 'DAEMON_NOTIFY_TWILIO_TOKEN="tok 1"' in e and (os.name=="nt" or oct(os.stat(d+"/.env").st_mode)[-3:]=="600"), e)
 ok("twilio_to: ${DAEMON_NOTIFY_TWILIO_TO}" in c and "client_id: ${DAEMON_SPOTIFY_CLIENT_ID}" in c and "account: ${DAEMON_SIGNAL_ACCOUNT}" in c and "twilio_language: tr-TR" in c and "cli: signal-cli" in c, c)
 ok('DAEMON_NOTIFY_TWILIO_TO="+905551234567"' in e or "DAEMON_NOTIFY_TWILIO_TO=+905551234567" in e, e)
 mc.load(); ok(mc.notify["twilio_to"]=="+905551234567" and mc.spotify["client_id"]=="abc123" and mc.signal_cfg["account"]=="+15551234567", (mc.notify["twilio_to"], mc.spotify["client_id"]))

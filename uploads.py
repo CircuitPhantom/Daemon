@@ -17,6 +17,7 @@ config.yaml:
 """
 import io
 import os
+import platform_support
 import re
 import secrets
 import shutil
@@ -133,7 +134,7 @@ def _pdf_text(data, path):
     except Exception as e:
         raise UploadError(f"could not read the PDF ({type(e).__name__})") from None
     if shutil.which("pdftotext"):
-        r = subprocess.run(["pdftotext", "-layout", str(path), "-"], capture_output=True, timeout=60)
+        r = subprocess.run(["pdftotext", "-layout", str(path), "-"], capture_output=True, timeout=60, creationflags=platform_support.NO_WINDOW)
         if r.returncode == 0:
             return r.stdout.decode("utf-8", "replace").strip(), None
     return None, None

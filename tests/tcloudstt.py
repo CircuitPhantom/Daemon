@@ -38,7 +38,7 @@ mode[0]="ok"; cloud_stt.reset(); ok(server.voice.transcribe(aud)=="hello from cl
 mc.stt_cloud["base_url"]="http://127.0.0.1:1/x"; cloud_stt.reset()
 ok(server.voice.transcribe(aud)=="local text", "network error -> local")
 # config round trip
-mc.save(); txt=open("cfg19.yaml").read(); ok("stt_cloud:" in txt and "gsk_x" in txt and oct(os.stat("cfg19.yaml").st_mode)[-3:]=="600", "saved private")
+mc.save(); txt=open("cfg19.yaml").read(); ok("stt_cloud:" in txt and "gsk_x" in txt and (os.name=="nt" or oct(os.stat("cfg19.yaml").st_mode)[-3:]=="600"), "saved private")
 mc.load(); ok(mc.stt_cloud["language"]=="tr" and mc.stt_cloud["timeout"]==20, "reload")
 # warm-up does not crash
 server.voice.warm_up_whisper()

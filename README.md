@@ -29,6 +29,7 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 One computer is enough. The laptop agent is only needed when the server runs somewhere else.
 
 ## Requirements
+Windows 10/11 support is being added step by step: see [docs/windows.md](docs/windows.md) for what works today.
 Linux, Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
 speech models (CPU only, no GPU needed). Microphone, phone, Signal, Twilio and Spotify are all optional.
 
@@ -81,7 +82,7 @@ Daemon can run commands and control your desktop on behalf of a language model. 
 ## Tests
 ```bash
 python3 -m pip install -r requirements.txt
-tests/run.sh              # all tests, in a scratch copy
+tests/run.sh              # all tests, in a scratch copy (Windows: python tests/run.py)
 tests/run.sh tjobs tllm   # some of them
 ```
 The tests use stubs for the speech and LLM libraries, so no models, network or API keys are needed. They do need `node` and `ffmpeg` on the PATH.
@@ -89,7 +90,7 @@ The tests use stubs for the speech and LLM libraries, so no models, network or A
 ## Third-party software and services
 Nothing third-party is bundled in this repository. Dependencies are installed by `pip` / `setup.sh` under their own licenses:
 FastAPI, Uvicorn, Pydantic, PyYAML, Requests, NumPy, Pillow, pypdf (permissive licenses), faster-whisper and the Whisper models (MIT),
-pykokoro and the Kokoro voice model (Apache 2.0). The dashboard libraries three.js (MIT), marked (MIT) and highlight.js (BSD-3-Clause)
+pykokoro and the Kokoro voice model (Apache 2.0). On Windows also psutil (BSD-3-Clause) and tzdata (Apache 2.0). The dashboard libraries three.js (MIT), marked (MIT) and highlight.js (BSD-3-Clause)
 are downloaded from jsDelivr by `setup.sh`. The dashboard uses your system fonts and loads nothing from third-party servers at runtime.
 
 Optional online services follow their own terms, which you accept by enabling them: your LLM provider, ElevenLabs, Groq, Twilio, Spotify
