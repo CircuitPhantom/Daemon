@@ -197,7 +197,7 @@ def process(name, data):
     limit = int(c["max_chars"])
     if text is not None and len(text) > limit:
         text, truncated = text[:limit], True
-    rel = str(path.relative_to(base_dir()))
+    rel = path.relative_to(base_dir()).as_posix()          # always '/', also on Windows: it ends up in download URLs
     return {"name": name, "path": str(path), "rel": rel, "kind": kind, "size": len(data), "text": text, "truncated": truncated,
             "pages": pages, "note": note, "image": image}
 

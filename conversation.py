@@ -163,9 +163,9 @@ def send_file(file, caption, where):
     if ctx and ctx.get("source") == "web" and ctx.get("emit") and where != "phone":
         files_root = Path(os.path.realpath(tools._files_dir()))
         if files_root in p.parents:
-            rel, src = str(p.relative_to(files_root)), "files"
+            rel, src = p.relative_to(files_root).as_posix(), "files"
         else:
-            rel, src = str(p.relative_to(root)), "uploads"
+            rel, src = p.relative_to(root).as_posix(), "uploads"
         meta = {"name": name, "kind": "image" if p.suffix.lower().lstrip(".") in INLINE_IMAGES else "other", "rel": rel,
                 "size": size, "out": src}
         ctx["out"].append(meta)

@@ -95,7 +95,7 @@ if True:
     log=c.get("/api/toollog").json()["items"]
     ok(log[0]["tool"]=="execute_command" and log[0]["source"]=="signal" and log[0]["decision"]=="approved", log[0])
     dec=[x["decision"] for x in log]; ok(any(d.startswith("refused: you said no") for d in dec) and any("no answer within" in d for d in dec), dec)
-    ok(oct(os.stat("toollog34.jsonl").st_mode & 0o777)=="0o600", "log is private")
+    ok(os.name=="nt" or oct(os.stat("toollog34.jsonl").st_mode & 0o777)=="0o600", "log is private")
     # switch off -> runs without asking
     r=c.post("/api/security", json={"confirm":False}).json(); ok(r["confirm"] is False and "execute_command" in r["choices"], r)
     evs=stream_turn("runcmd: echo no-ask"); ok(not any(e["type"]=="approve" for e in evs) and "no-ask" in [e for e in evs if e["type"]=="tool"][0]["output"], evs)

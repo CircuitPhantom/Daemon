@@ -142,6 +142,7 @@ with KokoroSynthesizer(SynthesisConfig(voice=m.tts["voice"], generation=Generati
     s.synthesize_text("ok", language=m.tts["lang"], voice=m.tts["voice"])
 '@
     $env:PYTHONUTF8 = '1'
+    $env:PYTHONPATH = $Here                               # the script sits in %TEMP%, so Python must be told where model_config.py is
     $tmpPy = Join-Path $env:TEMP 'daemon-models.py'      # not -c: Windows PowerShell 5.1 drops the double quotes of a native argument
     Set-Content -Path $tmpPy -Value $py -Encoding UTF8
     & $VenvPy $tmpPy

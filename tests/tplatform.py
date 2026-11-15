@@ -158,3 +158,12 @@ log=open(logf,encoding="utf-8").read()
 ok("from print" in log and "from stderr" in log and r.stdout=="" , (log, r.stdout, r.stderr))
 if sys.platform!="win32": ok("from child" in log, "child output too")
 print("ok")
+
+# upload and file "rel" paths always use "/" (they become download URLs), also when the OS joins with "\\"
+import uploads, pathlib as _pl
+_rel=_pl.PureWindowsPath("2026-11","abc-memo.txt").relative_to(_pl.PureWindowsPath("."))
+ok(_rel.as_posix()=="2026-11/abc-memo.txt", _rel.as_posix())
+os.environ.setdefault("DAEMON_UPLOADS", tempfile.mkdtemp())
+_r=uploads.process("memo.txt", b"hello")["rel"]
+ok("\\" not in _r and "/" in _r, _r)
+print("ok")
