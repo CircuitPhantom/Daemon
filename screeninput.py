@@ -69,7 +69,7 @@ def run(argv, timeout=6):
     if runner is not None:
         return runner(argv, timeout)
     try:
-        r = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+        r = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     except FileNotFoundError:
         return False, f"{argv[0]} is not installed"
     except subprocess.TimeoutExpired:

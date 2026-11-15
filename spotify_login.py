@@ -14,6 +14,7 @@ Only read access to your playlists is requested. The login is kept in spotify_to
 config.yaml (private file). Delete that file to log out.
 """
 import base64
+import platform_support
 import http.server
 import json
 import secrets
@@ -139,4 +140,5 @@ def login(port=PORT, open_browser=True, timeout=300):
 
 
 if __name__ == "__main__":
+    platform_support.setup_console()
     sys.exit(0 if login() else 1)

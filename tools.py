@@ -13,6 +13,7 @@ import json
 import math
 import operator
 import os
+import platform_support
 import re
 import shutil
 import signal
@@ -222,7 +223,7 @@ def search_text(text: str, path: str) -> str:
         return f"Error: {path} does not exist"
     cmd = ["grep", "-rIniF", "--max-count=3", "-e", text] + [f"--exclude-dir={d}" for d in _SKIP_DIRS] + ["--", str(root)]
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, errors="replace", timeout=15, stdin=subprocess.DEVNULL)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=15, stdin=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         return "Error: search took too long, use a smaller folder"
     except FileNotFoundError:
@@ -251,7 +252,7 @@ def system_info(where: str = "") -> str:
     """
     out = []
     try:
-        up = float(open("/proc/uptime").read().split()[0])
+        up = float(open("/proc/uptime", encoding="utf-8").read().split()[0])
         d, h, m = int(up // 86400), int(up % 86400 // 3600), int(up % 3600 // 60)
         out.append(f"Uptime: {d} d {h} h {m} min")
     except Exception:
@@ -262,7 +263,7 @@ def system_info(where: str = "") -> str:
     except Exception:
         pass
     try:
-        mem = {k: int(v.split()[0]) * 1024 for k, v in (l.split(":", 1) for l in open("/proc/meminfo"))}
+        mem = {k: int(v.split()[0]) * 1024 for k, v in (l.split(":", 1) for l in open("/proc/meminfo", encoding="utf-8"))}
         used = mem["MemTotal"] - mem["MemAvailable"]
         out.append(f"Memory: {_human(used)} used of {_human(mem['MemTotal'])} ({used * 100 // mem['MemTotal']}%)")
         if mem.get("SwapTotal"):
@@ -278,18 +279,18 @@ def system_info(where: str = "") -> str:
     temps = []
     for z in sorted(Path("/sys/class/thermal").glob("thermal_zone*")):
         try:
-            temps.append(int((z / "temp").read_text()) / 1000)
+            temps.append(int((z / "temp").read_text(encoding="utf-8")) / 1000)
         except Exception:
             pass
     if temps:
         out.append(f"Temperature: {max(temps):.0f} °C (hottest sensor)")
     for b in sorted(Path("/sys/class/power_supply").glob("BAT*")):
         try:
-            out.append(f"Battery: {(b / 'capacity').read_text().strip()}% ({(b / 'status').read_text().strip()})")
+            out.append(f"Battery: {(b / 'capacity').read_text(encoding='utf-8').strip()}% ({(b / 'status').read_text(encoding='utf-8').strip()})")
         except Exception:
             pass
     try:
-        ps = subprocess.run(["ps", "-eo", "comm,%cpu,%mem", "--sort=-%cpu"], capture_output=True, text=True, timeout=5).stdout.splitlines()[1:4]
+        ps = subprocess.run(["ps", "-eo", "comm,%cpu,%mem", "--sort=-%cpu"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=5).stdout.splitlines()[1:4]
         out.append("Busiest processes (name, %CPU, %mem): " + "; ".join(" ".join(l.split()) for l in ps))
     except Exception:
         pass
@@ -671,7 +672,7 @@ def calendar_delete(id: str, date: str = "") -> str:
 # ───────────────────────── desktop: media, volume, clipboard, launching ─────────────────────────
 def _run(cmd, timeout=5):
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, errors="replace", timeout=timeout, stdin=subprocess.DEVNULL)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, stdin=subprocess.DEVNULL)
     except FileNotFoundError:
         return 127, f"{cmd[0]} is not installed"
     except subprocess.TimeoutExpired:
@@ -1097,7 +1098,7 @@ def _spotify_user_token(cfg):
     if _sp_user["value"] and time.time() < _sp_user["exp"] - 30:
         return _sp_user["value"]
     try:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             refresh = json.load(f)["refresh_token"]
     except Exception:
         raise RuntimeError("spotify_token.json is damaged: run spotify_login.py again") from None
@@ -1516,7 +1517,7 @@ def _grab_screen(focus=False, units="", monitor=""):
             if not shutil.which(cmd[0]):
                 continue
             try:
-                r = subprocess.run([f if x == "{f}" else x for x in cmd], capture_output=True, timeout=15, text=True)
+                r = subprocess.run([f if x == "{f}" else x for x in cmd], capture_output=True, timeout=15, text=True, encoding="utf-8", errors="replace")
             except Exception as e:
                 err = f"{cmd[0]}: {type(e).__name__}"
                 continue
@@ -1714,7 +1715,7 @@ def _active_window():
     """Title (and app) of the window in front, or ''. Tries Hyprland, Sway, KDE and X11 helpers."""
     def run(cmd):
         try:
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
+            r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3)
             return r.stdout.strip() if r.returncode == 0 else ""
         except Exception:
             return ""
@@ -2175,7 +2176,7 @@ def write_file(file: str, content: str) -> str:
             backup = f" (the previous version is in {target.name}.bak)"
         tmp = target.with_name(f".{target.name}.tmp")
         tmp.write_bytes(data)
-        os.replace(tmp, target)
+        platform_support.replace_file(tmp, target)
     except Exception as e:
         return f"Error: {e}"
     return f"Saved {len(data)} bytes to {target}{backup}"

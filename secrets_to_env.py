@@ -10,6 +10,7 @@ signal.account and signal.allowed.
 The auth section (PIN hash, cookie secret) stays where it is: Daemon writes it itself.
 """
 import os
+import platform_support
 import re
 import shutil
 import sys
@@ -41,6 +42,7 @@ def find(lines):
 
 
 def main():
+    platform_support.setup_console()
     apply = "--apply" in sys.argv
     path = mc.CONFIG_PATH
     lines = path.read_text(encoding="utf-8").splitlines()

@@ -16,6 +16,7 @@ from pathlib import Path
 
 import yaml
 
+import platform_support
 import tools
 
 CONFIG_PATH = Path(os.environ.get("DAEMON_CONFIG") or Path(__file__).with_name("config.yaml"))
@@ -346,7 +347,7 @@ def load_env():
     """Reads .env into os.environ (real environment variables win). Safe to call again after the file changed."""
     try:
         text = ENV_PATH.read_text(encoding="utf-8")
-        if ENV_PATH.stat().st_mode & 0o077:
+        if platform_support.readable_by_others(ENV_PATH):
             print(f"[config] {ENV_PATH.name} can be read by other users: run chmod 600 {ENV_PATH}")
     except OSError:
         text = ""
@@ -748,7 +749,7 @@ def atomic_write(path, text):
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(text)
-        os.replace(tmp, path)
+        platform_support.replace_file(tmp, path)
     except Exception:
         if os.path.exists(tmp):
             os.remove(tmp)

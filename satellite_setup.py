@@ -6,9 +6,12 @@
   python satellite_setup.py --off      disable (the server uses its own microphone/tools again)
 """
 import secrets
+import platform_support
 import sys
 
 import model_config
+
+platform_support.setup_console()
 
 c = model_config.satellite
 if "--off" in sys.argv:

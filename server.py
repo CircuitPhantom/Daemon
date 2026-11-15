@@ -11,6 +11,7 @@ the parts. The rest lives in:
 Run: uvicorn server:app --host 127.0.0.1 --port 8000   (install-service.sh sets that up as a service)
 """
 import os
+import platform_support
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -42,6 +43,8 @@ import toolguard
 import tools
 import voice
 from datetime import datetime
+
+platform_support.setup_console()
 
 sched, rem = conv.sched, conv.rem
 

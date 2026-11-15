@@ -5,12 +5,15 @@
   venv/bin/python doctor.py --online    also test the cloud model and the ElevenLabs voice (uses a few tokens/characters)
 """
 import importlib
+import platform_support
 import os
 import shutil
 import socket
 import subprocess
 import sys
 from pathlib import Path
+
+platform_support.setup_console()
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -27,7 +30,7 @@ def show(kind, text, hint=""):
 
 def run(cmd, timeout=40):
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
         return r.returncode, (r.stdout + r.stderr).strip()
     except Exception as e:
         return 1, str(e)
@@ -133,7 +136,7 @@ agent_conf = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / 
 if agent_conf.exists():
     import json
     import urllib.request
-    c = json.loads(agent_conf.read_text())
+    c = json.loads(agent_conf.read_text(encoding="utf-8"))
     try:
         urllib.request.urlopen(urllib.request.Request(c["server"].rstrip("/") + "/api/sat/config", headers={
             "Authorization": "Bearer " + c["token"], "User-Agent": "daemon-agent/1.0"}), timeout=8)

@@ -25,6 +25,7 @@ Settings can also be saved in ~/.config/daemon-agent.json: {"server": "...", "to
 "stt_model": "small", "stt_device": "cpu", "stt_compute": "int8"}
 """
 import argparse
+import platform_support
 import asyncio
 import json
 import os
@@ -122,7 +123,7 @@ class Server:
 def load_args():
     saved = {}
     try:
-        saved = json.loads(CONF.read_text())
+        saved = json.loads(CONF.read_text(encoding="utf-8"))
     except Exception:
         pass
     ap = argparse.ArgumentParser(description="Daemon laptop agent")
@@ -336,6 +337,7 @@ def test_input():
 
 
 def main():
+    platform_support.setup_console()
     a = load_args()
     if a.test_input:
         sys.exit(test_input())

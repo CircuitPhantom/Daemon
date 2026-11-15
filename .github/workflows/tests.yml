@@ -16,3 +16,17 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg        # the tests make small audio files with it
       - run: pip install fastapi "uvicorn[standard]" pydantic python-multipart pyyaml requests numpy pillow pypdf httpx
       - run: bash tests/run.sh
+  windows:
+    # Informational while Windows support is being built: it shows what still fails, but does not block a merge.
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: choco install ffmpeg -y --no-progress
+      - run: pip install fastapi "uvicorn[standard]" pydantic python-multipart pyyaml requests numpy pillow pypdf httpx
+      - run: python -m compileall -q .
+      - run: python tests/run.py

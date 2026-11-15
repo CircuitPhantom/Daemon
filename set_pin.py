@@ -7,9 +7,12 @@
 Run it in the folder with config.yaml (or set DAEMON_CONFIG). Restart is not needed, the server notices.
 """
 import getpass
+import platform_support
 import sys
 
 import auth
+
+platform_support.setup_console()
 
 if "--off" in sys.argv:
     auth.disable()

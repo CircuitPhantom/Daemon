@@ -39,7 +39,7 @@ def health():
 
 def _cmd(cmd, timeout=6):
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
         return r.returncode, (r.stdout + r.stderr).strip()
     except Exception as e:
         return 1, str(e)
@@ -64,7 +64,7 @@ def newest_backup():
 def _mem_available_percent():
     try:
         info = {}
-        for line in Path("/proc/meminfo").read_text().splitlines():
+        for line in Path("/proc/meminfo").read_text(encoding="utf-8").splitlines():
             k, _, v = line.partition(":")
             info[k] = int(v.split()[0])
         return 100.0 * info["MemAvailable"] / info["MemTotal"]
