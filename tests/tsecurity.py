@@ -3,7 +3,8 @@ sys.path[:0]=["stubs","."]
 os.environ.update(DAEMON_CONFIG="cfg34.yaml", DAEMON_CHATS="chats34", DAEMON_MEMORY="mem34.json", DAEMON_REMINDERS="rem34.json",
                   DAEMON_INBOX=os.path.abspath("inbox34.json"), DAEMON_TOOL_LOG=os.path.abspath("toollog34.jsonl"),
                   FAKE_INBOX=os.path.abspath("sig_in.txt"), FAKE_SENT=os.path.abspath("sig_sent.txt"))
-os.environ["PATH"]=os.path.abspath("fakesig")+":"+os.environ["PATH"]
+os.environ["PATH"]=os.path.abspath("fakesig")+os.pathsep+os.environ["PATH"]
+if os.name=="nt": open("fakesig/signal-cli.bat","w").write('@"%s" "%%~dp0signal-cli" %%*\r\n'%sys.executable)   # Windows starts signal-cli.bat
 for f in ("cfg34.yaml","mem34.json","rem34.json","sig_in.txt","sig_sent.txt","inbox34.json","toollog34.jsonl"):
     if os.path.exists(f): os.remove(f)
 shutil.rmtree("chats34", ignore_errors=True)

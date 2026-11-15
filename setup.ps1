@@ -142,7 +142,10 @@ with KokoroSynthesizer(SynthesisConfig(voice=m.tts["voice"], generation=Generati
     s.synthesize_text("ok", language=m.tts["lang"], voice=m.tts["voice"])
 '@
     $env:PYTHONUTF8 = '1'
-    & $VenvPy -c $py
+    $tmpPy = Join-Path $env:TEMP 'daemon-models.py'      # not -c: Windows PowerShell 5.1 drops the double quotes of a native argument
+    Set-Content -Path $tmpPy -Value $py -Encoding UTF8
+    & $VenvPy $tmpPy
+    Remove-Item $tmpPy -Force -ErrorAction SilentlyContinue
     if ($LASTEXITCODE -ne 0) { Warn 'could not pre-load the speech models (they download on the first start instead). If it mentions espeak, see docs/windows.md.' }
 }
 

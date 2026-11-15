@@ -2,7 +2,8 @@ import os, sys, json, time, shutil
 sys.path[:0]=["stubs","."]
 os.environ.update(DAEMON_CONFIG="cfg10.yaml", DAEMON_CHATS="chats10", DAEMON_MEMORY="mem10.json", DAEMON_REMINDERS="rem10.json",
                   FAKE_INBOX=os.path.abspath("sig_in.txt"), FAKE_SENT=os.path.abspath("sig_sent.txt"))
-os.environ["PATH"]=os.path.abspath("fakesig")+":"+os.environ["PATH"]
+os.environ["PATH"]=os.path.abspath("fakesig")+os.pathsep+os.environ["PATH"]
+if os.name=="nt": open("fakesig/signal-cli.bat","w").write('@"%s" "%%~dp0signal-cli" %%*\r\n'%sys.executable)   # Windows starts signal-cli.bat
 for f in ("cfg10.yaml","mem10.json","rem10.json","sig_in.txt","sig_sent.txt"):
     if os.path.exists(f): os.remove(f)
 shutil.rmtree("chats10", ignore_errors=True)

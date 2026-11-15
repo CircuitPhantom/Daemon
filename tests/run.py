@@ -15,9 +15,7 @@ LINUX_ONLY = {
     "tfix": "fake Linux commands",
     "tmedia": "playerctl / wpctl / clipboard tools",
     "tsat": "fake Linux commands for the laptop agent",
-    "tsecurity": "fake signal-cli shell script",
     "tshot": "grim / scrot screenshot tools",
-    "tsignal": "fake signal-cli shell script",
     "tspotify": "playerctl",
 }
 HERE = Path(__file__).resolve().parent

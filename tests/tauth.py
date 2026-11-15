@@ -65,8 +65,9 @@ with TestClient(server.app) as c:
     ok(TestClient(server.app).get("/api/settings").status_code==200, "enabled without a PIN never locks you out")
 # set_pin.py
 open("cfg17.yaml","w").write("model: m\n")
-p=subprocess.run([sys.executable,"set_pin.py"],input=None,capture_output=True,text=True,env=dict(os.environ,PYTHONPATH="stubs:."),stdin=subprocess.DEVNULL)
-ok(p.returncode!=0, "set_pin needs a terminal: "+p.stdout+p.stderr)
-p=subprocess.run([sys.executable,"set_pin.py","--off"],capture_output=True,text=True,env=dict(os.environ,PYTHONPATH="stubs:."))
+if os.name!="nt":      # Windows getpass reads the console, not stdin: the prompt would wait for a person
+    p=subprocess.run([sys.executable,"set_pin.py"],input=None,capture_output=True,text=True,env=dict(os.environ,PYTHONPATH="stubs:."),stdin=subprocess.DEVNULL)
+    ok(p.returncode!=0, "set_pin needs a terminal: "+p.stdout+p.stderr)
+p=subprocess.run([sys.executable,"set_pin.py","--off"],capture_output=True,text=True,env=dict(os.environ,PYTHONPATH=os.pathsep.join(["stubs","."])))
 ok("off" in p.stdout and "\nauth:\n  enabled: false" in open("cfg17.yaml").read(), p.stdout+p.stderr)
 print("AUTH OK")
