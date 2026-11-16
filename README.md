@@ -29,7 +29,7 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 One computer is enough. The laptop agent is only needed when the server runs somewhere else.
 
 ## Requirements
-Windows 10/11 support is being added step by step: see [docs/windows.md](docs/windows.md) for what works today.
+Windows 10/11 is supported natively (server, laptop tools, computer control): see [docs/windows.md](docs/windows.md) for what is tested and its limits.
 Linux, Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
 speech models (CPU only, no GPU needed). Microphone, phone, Signal, Twilio and Spotify are all optional.
 

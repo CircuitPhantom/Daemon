@@ -1,13 +1,13 @@
 # Daemon on Windows
 
-Status: **work in progress**. Daemon is developed on Linux; Windows support is added in steps. This page lists exactly what works.
+Status: **works**, tested by the author on one machine (Windows 11, Turkish Q keyboard, two screens, PowerShell 5.1, Python 3.13), with the server and the desktop tools on the same PC. Linux behaviour is unchanged (the test suite runs on both). This page lists what works, what does not and what is still untested.
 
 | Tier | What | Status |
 |---|---|---|
 | 0 | Server inside WSL2 | Works (below) |
-| 1 | Native Windows server | Written, waiting for your test (below) |
-| 2 | Native Windows laptop agent (wake word, speakers, media keys, volume, clipboard, apps, screenshot) | Written, waiting for your test (below) |
-| 3 | Windows computer control (mouse + keyboard) | Written, waiting for your test (below) |
+| 1 | Native Windows server | Works (tested, checklist below) |
+| 2 | Native Windows laptop agent (wake word, speakers, media keys, volume, clipboard, apps, screenshot) | Desktop tools work (tested through a local server); the separate agent task is untested |
+| 3 | Windows computer control (mouse + keyboard) | Works (tested on one PC with two screens) |
 
 ## Tier 0: WSL2 (works today)
 The server runs unchanged inside WSL2 (Ubuntu). Follow [Getting started](getting-started.md) in the WSL2 terminal.
@@ -74,7 +74,7 @@ Run in PowerShell in the project folder; send me anything that does not match.
 | 11 | `.\backup.ps1 -WithFiles` then `tar -tzf $HOME\daemon-backup-*.tar.gz` | lists `./project/...`, `./MANIFEST.txt` |
 | 12 | Add a reminder for 2 minutes from now in the chat | it fires (dashboard / Signal) |
 
-**Untested:** everything above on real Windows. The PowerShell scripts were not run or syntax-checked before delivery; check them first:
+**Tested** on the machine above (items 1-12; `setup.ps1`, `install-service.ps1`, `backup.ps1`). Not tested: other Windows versions, Windows 10, other keyboard layouts. Parse-check the PowerShell scripts if you change them:
 ```powershell
 foreach ($f in 'setup','install-service','backup') { $e=$null; [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f.ps1",[ref]$null,[ref]$e) | Out-Null; "$f : $($e.Count) errors" }
 ```
@@ -130,7 +130,7 @@ On the Windows PC, in the project folder. The server must already have `satellit
 | 14 | Reboot, log in | `Get-ScheduledTask "Daemon Agent"` is `Running`; `logs\agent.log` has lines; the dashboard shows "connected" again |
 | 15 | `Stop-ScheduledTask -TaskName "Daemon Agent"; Get-Process pythonw` | no agent process left |
 
-**Untested:** everything in `win_desktop.py` on real Windows (the logic is covered by mocked tests, the Windows API calls are not). `--probe` and this list are how we find out. `setup-agent.ps1` was not run before delivery; parse-check it first:
+**Tested:** `--probe` (10/10) and items 5-13 with the server on the same PC. **Not tested:** `setup-agent.ps1`, the "Daemon Agent" task and the agent talking to a separate server (items 3, 4, 14, 15), `-Allow`, Windows 10. Parse-check the script first:
 ```powershell
 foreach ($f in 'setup-agent') { $e=$null; [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f.ps1",[ref]$null,[ref]$e) | Out-Null; "$f : $($e.Count) errors" }
 ```
@@ -170,7 +170,7 @@ Open Notepad first and keep it small, so nothing important is under the pointer.
 | 13 | Open Windows Security or a window with "password" in its title, ask to type "a" | refused as a password prompt |
 | 14 | Ask for `ctrl+alt+delete` | `blocked` |
 
-**Untested:** all of it on real Windows. The logic (coordinate mapping with negative origins, key resolution for the Turkish and US layouts, event order, refusals) is covered by mocked tests, the `SendInput` / `SetCursorPos` / UIPI calls are not. I will not call tier 3 working until you have run `--test-input` and items 3-12.
+**Tested:** on one PC with two screens, with the server controlling its own computer (`DAEMON_ALLOW_INPUT=1`). **Not tested:** through a separate agent (`-Allow screen_input`), screens with very different scaling beyond that PC, other keyboard layouts, Windows 10.
 
 ## Troubleshooting
 - **`ffmpeg not found`:** `winget install Gyan.FFmpeg`, then open a new PowerShell (PATH is read at start).
