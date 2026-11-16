@@ -109,6 +109,8 @@ The settings (with the token) are in `%APPDATA%\daemon-agent\config.json`, reada
 - `ensure_session_env` (Wayland / D-Bus variables) is not needed on Windows and is skipped.
 
 ### Manual test checklist (tier 2)
+**One computer only (no separate server)?** Then you do not need the agent: the server on this PC runs the desktop tools itself. `setup.ps1` installs the same packages; use checklist items 1, 2, 5-12, and 13 through Settings > Wake word (the server listens to this PC's microphone). Items 3, 4, 14, 15 are for the agent.
+
 On the Windows PC, in the project folder. The server must already have `satellite.enabled` (`python satellite_setup.py`).
 | # | Do | Expect |
 |---|---|---|

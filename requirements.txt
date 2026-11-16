@@ -18,3 +18,9 @@ pillow                 # shrinks photos you send before the model sees them
 pypdf                  # reads the text of PDFs you send
 tzdata; sys_platform == "win32"      # time zone names (Europe/Istanbul) for the scheduler: Windows has no zoneinfo database
 psutil; sys_platform == "win32"      # system_info (memory, CPU, battery) on Windows
+# Windows desktop tools (volume, what is playing) when the server runs on your own PC; see docs/windows.md
+pycaw; sys_platform == "win32"
+winrt-runtime; sys_platform == "win32"
+winrt-Windows.Media.Control; sys_platform == "win32"
+winrt-Windows.Foundation; sys_platform == "win32"
+winrt-Windows.Foundation.Collections; sys_platform == "win32"
