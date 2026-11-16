@@ -9,7 +9,7 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 
 **Website:** https://circuitphantom.github.io/Daemon/
 
-> Status: personal project, shared as is. This fork is set up for **Windows 10/11** first; Linux (Arch + Hyprland, Debian server) is fully supported too and every change keeps the Linux behaviour and its tests.
+> Status: personal project, shared as is. This fork is **Windows 10/11 only** (tested on Windows 11, PowerShell 5.1, Python 3.13): see [docs/windows.md](docs/windows.md) for what is tested and its limits. Some Linux code paths are still in the source but are neither tested nor documented here.
 
 ## Features
 - **Voice and text chat** from the web dashboard, an installable phone app (PWA with Share-menu support) and Signal
@@ -29,11 +29,11 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 One computer is enough. The laptop agent is only needed when the server runs somewhere else.
 
 ## Requirements
-Windows 10/11 (PowerShell 5.1, already there) or Linux, Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
+Windows 10/11 (PowerShell 5.1, already there), Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
 speech models (CPU only, no GPU needed). Microphone, phone, Signal, Twilio and Spotify are all optional.
 
 ## Quick start
-**Windows** (normal PowerShell, not administrator; what is tested and its limits: [docs/windows.md](docs/windows.md)):
+In a normal (not administrator) PowerShell:
 ```powershell
 git clone https://github.com/CircuitPhantom/Daemon.git
 cd Daemon
@@ -42,17 +42,6 @@ Copy-Item config.example.yaml config.yaml ; Copy-Item .env.example .env
 notepad .env ; notepad config.yaml          # DAEMON_LLM_API_KEY in .env; llm.base_url and llm.model in config.yaml
 .\venv\Scripts\python.exe doctor.py        # what is missing?
 .\install-service.ps1                       # run in the background from log on (or: python serve.py)
-```
-**Linux:**
-```bash
-git clone https://github.com/CircuitPhantom/Daemon.git
-cd Daemon
-./setup.sh                                  # system packages, venv, Python packages, dashboard libraries
-cp config.example.yaml config.yaml
-cp .env.example .env && chmod 600 .env
-$EDITOR .env config.yaml                    # DAEMON_LLM_API_KEY in .env; llm.base_url and llm.model in config.yaml
-venv/bin/python doctor.py                   # what is missing?
-./install-service.sh                        # run in the background (or: venv/bin/python -m uvicorn server:app --port 8000)
 ```
 Open <http://127.0.0.1:8000>. The full walk-through is in [docs/getting-started.md](docs/getting-started.md).
 
@@ -69,6 +58,7 @@ Open <http://127.0.0.1:8000>. The full walk-through is in [docs/getting-started.
 | [Spotify](docs/spotify.md) | App keys, one-time login, devices |
 | [Scheduled tasks](docs/tasks.md) | Cron tasks, background jobs, reminders |
 | [Troubleshooting](docs/troubleshooting.md) | Common errors |
+| [Daemon on Windows](docs/windows.md) | What is tested, limits, background task, manual checklists |
 | [FEATURES.md](FEATURES.md) | All tools, web search, jobs, computer control, `.env` |
 | [MIGRATION.md](MIGRATION.md) | Moving Daemon to a home server |
 
@@ -84,24 +74,24 @@ Daemon can run commands and control your desktop on behalf of a language model. 
 - Listen on `127.0.0.1` (the default) and reach it through Tailscale or a reverse proxy with TLS. Never expose port 8000 to the internet. Set a PIN.
 - Risky tools (`execute_command`, `write_file`, `computer`...) ask for your approval (`security.confirm_tools`); scheduled tasks and
   background jobs never get them.
-- Computer control needs two switches: the tool enabled on the server and `--allow screen_input` on the laptop agent.
-  `touch ~/.daemon-stop` on the laptop is an emergency brake.
+- Computer control needs two switches: the tool enabled on the server and `-Allow screen_input` on the laptop agent (or `DAEMON_ALLOW_INPUT=1` when the server runs on the same PC).
+  Creating the file `$HOME\.daemon-stop` is an emergency brake.
 - Your prompts and tool results go to the LLM provider you configure. Check its data-retention terms ([details](docs/llm-providers.md#privacy)).
 - Report vulnerabilities privately, see [SECURITY.md](SECURITY.md).
 
 ## Tests
-```bash
-python3 -m pip install -r requirements.txt
-tests/run.sh              # all tests, in a scratch copy (Windows: python tests/run.py)
-tests/run.sh tjobs tllm   # some of them
+```powershell
+pip install -r requirements.txt
+python tests\run.py              # all tests, in a scratch copy
+python tests\run.py tjobs tllm   # some of them (add -v to see the output of failures)
 ```
 The tests use stubs for the speech and LLM libraries, so no models, network or API keys are needed. They do need `node` and `ffmpeg` on the PATH.
 
 ## Third-party software and services
-Nothing third-party is bundled in this repository. Dependencies are installed by `pip` / `setup.sh` under their own licenses:
+Nothing third-party is bundled in this repository. Dependencies are installed by `pip` / `setup.ps1` under their own licenses:
 FastAPI, Uvicorn, Pydantic, PyYAML, Requests, NumPy, Pillow, pypdf (permissive licenses), faster-whisper and the Whisper models (MIT),
 pykokoro and the Kokoro voice model (Apache 2.0). On Windows also psutil (BSD-3-Clause), tzdata (Apache 2.0), pycaw and comtypes (MIT) and the pywinrt packages `winrt-*` (MIT) for the laptop agent. The dashboard libraries three.js (MIT), marked (MIT) and highlight.js (BSD-3-Clause)
-are downloaded from jsDelivr by `setup.sh`. The dashboard uses your system fonts and loads nothing from third-party servers at runtime.
+are downloaded from jsDelivr by `setup.ps1`. The dashboard uses your system fonts and loads nothing from third-party servers at runtime.
 
 Optional online services follow their own terms, which you accept by enabling them: your LLM provider, ElevenLabs, Groq, Twilio, Spotify
 (Web API), Brave Search. Two features rely on unofficial access and may break or be restricted by the provider at any time:

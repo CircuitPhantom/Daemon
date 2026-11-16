@@ -1,2 +1,0 @@
-#!/bin/sh
-echo "xdg-open $*" >> "$FAKELOG"

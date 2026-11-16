@@ -1,2 +1,0 @@
-#!/bin/bash
-echo -n 'copied error: segfault'

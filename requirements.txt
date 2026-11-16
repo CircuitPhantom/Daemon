@@ -1,5 +1,5 @@
 # Daemon: Python packages. Install with:  pip install -r requirements.txt
-# To get exactly the versions of your current machine, run backup.sh: it also writes requirements.lock.
+# To get exactly the versions of your current machine, run backup.ps1: it also writes requirements.lock.
 fastapi
 uvicorn[standard]      # includes websockets, needed by the phone bridge
 pydantic

@@ -10,20 +10,20 @@ With Signal set up you can chat with Daemon from your phone, send it photos, voi
 > A number can only be a Signal account in one place. If you register your personal number for the bot, your phone's Signal stops working. Use a separate number for the bot.
 
 ## Install signal-cli
-- Arch: `sudo pacman -S signal-cli jdk-openjdk` (`setup.sh` offers this).
-- Debian/Ubuntu: `sudo apt install default-jre-headless`, then download signal-cli from <https://github.com/AsamK/signal-cli/releases>, unpack it and put `bin/signal-cli` in your `PATH` (for example `/usr/local/bin`).
-- Check: `signal-cli --version`.
+- Java 21+: `winget install EclipseAdoptium.Temurin.21.JDK` (`setup.ps1` offers this).
+- signal-cli is not on winget: download the release from <https://github.com/AsamK/signal-cli/releases>, unzip it and add its `bin` folder to `PATH` (the program is `signal-cli.bat`). Open a new PowerShell.
+- Check: `signal-cli --version`. Its data folder is `%USERPROFILE%\.local\share\signal-cli` (set `signal.data_dir` in `config.yaml` if yours differs).
 
 ## Register the bot number
-```bash
+```powershell
 signal-cli -a +15551234567 register
 ```
 If Signal answers with a captcha error, open <https://signalcaptchas.org/registration/generate.html>, solve it, copy the `signalcaptcha://...` link (right-click "Open Signal" > copy link) and run:
-```bash
+```powershell
 signal-cli -a +15551234567 register --captcha 'signalcaptcha://...'
 ```
 You get a code by SMS (add `--voice` for a call). Verify:
-```bash
+```powershell
 signal-cli -a +15551234567 verify 123-456
 signal-cli listAccounts                      # the number should be listed
 ```
@@ -37,7 +37,7 @@ signal:
   account: "+15551234567"      # the bot's number (or DAEMON_SIGNAL_ACCOUNT in .env)
   allowed: "+15551112233"     # who may talk to Daemon: your number, comma separated (or DAEMON_SIGNAL_ALLOWED)
 ```
-Keep the quotes around numbers. Restart Daemon (`systemctl --user restart daemon`), then message the bot number from your own Signal. Daemon starts and supervises `signal-cli jsonRpc` itself, no extra service.
+Keep the quotes around numbers. Restart Daemon (`Stop-ScheduledTask -TaskName Daemon; Start-ScheduledTask -TaskName Daemon`), then message the bot number from your own Signal. Daemon starts and supervises `signal-cli jsonRpc` itself, no extra service.
 
 `doctor.py` checks signal-cli, the account and the allowed list.
 
@@ -61,13 +61,13 @@ Plain messages go to the active chat, the same one the dashboard shows. Photos, 
 - Messages older than `signal.max_age` seconds (default 600), sent while Daemon was off, are ignored.
 
 ## Moving the bot to another computer
-Copy `~/.local/share/signal-cli` (`./backup.sh --with-signal` does it) and stop signal-cli on the old machine. Running one account in two places breaks the session keys ("untrusted identity" errors). See [MIGRATION.md](../MIGRATION.md).
+Copy `%USERPROFILE%\.local\share\signal-cli` (`.\backup.ps1 -WithSignal` does it) and stop signal-cli on the old machine. Running one account in two places breaks the session keys ("untrusted identity" errors). See [MIGRATION.md](../MIGRATION.md).
 
 ## Problems
 | Symptom | Cause |
 |---|---|
-| No reply | The sender is not in `allowed`; `signal.enabled` is false; Daemon not restarted; check `journalctl --user -u daemon` |
-| `signal-cli not found` | Not in the `PATH` of the service. Set `signal.cli` to the full path |
+| No reply | The sender is not in `allowed`; `signal.enabled` is false; Daemon not restarted; read `logs\daemon.log` |
+| `signal-cli not found` | Not in the `PATH` of the background task (open a new PowerShell or log off and on after changing `PATH`). Set `signal.cli` to the full path of `signal-cli.bat` |
 | `decryption error` / `untrusted identity` | The account runs in two places, or the data was copied while signal-cli was running |
 | Registration fails with 429 / captcha | Wait, solve a fresh captcha |
-| Messages are failing to deliver | Check `journalctl --user -u daemon -f` output. If you see message from unknown ID blocked, add that ID near your phone number in config.yaml `signal.allowed` after making sure that it is yours |  
+| Messages are failing to deliver | Read `logs\daemon.log` (`Get-Content logs\daemon.log -Wait -Tail 30`). If you see message from unknown ID blocked, add that ID near your phone number in config.yaml `signal.allowed` after making sure that it is yours |  

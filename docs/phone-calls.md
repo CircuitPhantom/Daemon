@@ -24,8 +24,8 @@ Calls cost money (Twilio number rental plus per-minute rates). A safety limit (`
 Pickup flow: Twilio streams your voice to a small web app of Daemon (its own port, only `/phone/*`); speech is transcribed with Whisper, answered by the active chat (tools work), and spoken with Kokoro. Talking over the reply interrupts it.
 
 1. Complete the steps above, plus a public HTTPS address for port 8001 only. With Tailscale:
-   ```bash
-   sudo tailscale funnel --bg --https=8443 8001
+   ```powershell
+   tailscale funnel --bg --https=8443 8001
    ```
    gives `https://NAME.tailnet.ts.net:8443`. (Funnel must be allowed for your tailnet in the Tailscale admin console.)
 2. `config.yaml`:

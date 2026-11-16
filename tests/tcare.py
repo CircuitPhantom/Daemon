@@ -87,15 +87,12 @@ ok(hs("/forget zzzzzz")=="No memory with that id.", "unknown id"); ok(hs(f"/forg
 ok("Saved to the inbox" in hs("/inbox hello world"), "inbox still works"); ok("hello" in hs("/find hello"), "find alias")
 ok(hs("/new")=="Started a new chat.", "new chat")
 ok("reply" in hs("/nosuchcommand hi") or True, "unknown slash goes to the model")
-if os.name=="nt": print("note: the screenshot part needs Linux tools (grim, xdotool); Windows has its own tests"); print("ok"); sys.exit(0)
-# /ekran
-os.makedirs("fakeshot",exist_ok=True)
-from PIL import Image
-im=Image.new("RGB",(1200,700),(30,90,160)); b=io.BytesIO(); im.save(b,"PNG"); open("fake_screen.png","wb").write(b.getvalue())
-open("fakeshot/grim","w").write("#!/bin/bash\ncp %s \"$1\"\n"%os.path.abspath("fake_screen.png")); os.chmod("fakeshot/grim",0o755)
-open("fakeshot/xdotool","w").write("#!/bin/bash\necho 'Firefox: Arch Wiki'\n"); os.chmod("fakeshot/xdotool",0o755)
-open("fakeshot/xclip","w").write("#!/bin/bash\necho -n 'copied error: segfault'\n"); os.chmod("fakeshot/xclip",0o755)
-os.environ["PATH"]=os.path.abspath("fakeshot")+":"+os.environ["PATH"]; os.environ["WAYLAND_DISPLAY"]="wayland-0"; os.environ.pop("DISPLAY",None)
+# /ekran: the Windows screen backend with a fake screen, window title and clipboard (runs the same everywhere)
+import platform_support as ps, win_desktop as W
+from PIL import Image, ImageGrab
+_was = ps.IS_WINDOWS; ps.IS_WINDOWS = True
+ImageGrab.grab = lambda *a, **k: Image.new("RGB",(1200,700),(30,90,160))
+W.active_window = lambda: "Firefox: Arch Wiki"; W.clipboard_get = lambda: "copied error: segfault"
 real_call=tools.remote["call"]; tools.remote["call"]=None
 shipped=[]; signal_bot.bot.send_file=lambda p,c="",to=None:(shipped.append((p,c)),(True,"sent"))[1]
 r_=hs("/screen"); ok(r_=="(done)" and shipped and shipped[0][0].endswith(".jpg") and shipped[0][1]=="Your screen", (r_, shipped))
@@ -117,6 +114,7 @@ mc.security["confirm"]=False
 tools.remote["call"]=None
 out=tools.screenshot(); ok("Window in front: Firefox: Arch Wiki" in out and "Clipboard" not in out, out)
 out=tools.screenshot(clipboard=True); ok("Clipboard text:" in out and "segfault" in out, out)
+ps.IS_WINDOWS = _was
 
 # ---- HTTP: health, no-cache, care API ----
 import uvicorn

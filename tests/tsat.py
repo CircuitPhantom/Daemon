@@ -53,23 +53,20 @@ sys.modules["faster_whisper"]=types.ModuleType("faster_whisper")      # no Whisp
 ls2=dag.LocalSTT("base","cpu","int8",lambda a,p:"SERVER")
 ok(ls2(np.zeros(16000,dtype=np.float32))=="SERVER" and ls2.failed, "fallback to server stt")
 sys.modules.pop("faster_whisper")
-# agent subprocess with a fake playerctl
-open("sat_state","w").write("playing")
-env=dict(os.environ,FAKELOG=os.path.abspath("sat_log"),FAKESTATE=os.path.abspath("sat_state"),FAKELOADED=os.path.abspath("sat_loaded"),PATH=os.path.abspath("fakebin")+":"+os.environ["PATH"])
-bad=subprocess.Popen([sys.executable,"daemon-agent.py","--no-wake","--server","http://127.0.0.1:8795","--token","wrongwrongwrongwrong"],env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+# the real agent process
+env=dict(os.environ)
+bad=subprocess.Popen([sys.executable,"daemon-agent.py","--no-wake","--server","http://127.0.0.1:8795","--token=wrongwrongwrongwrong"],env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
 time.sleep(3); ok(not satellite.hub.connected, "wrong token must not connect"); bad.kill()
-ag=subprocess.Popen([sys.executable,"-u","daemon-agent.py","--no-wake","--server","http://127.0.0.1:8795","--token",tok],env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+ag=subprocess.Popen([sys.executable,"-u","daemon-agent.py","--no-wake","--server","http://127.0.0.1:8795","--token="+tok],env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
 for _ in range(100):
     if satellite.hub.connected: break
     time.sleep(0.2)
 ok(satellite.hub.connected and satellite.hub.name, "agent connected: "+(ag.stdout.read(500) if ag.poll() is not None else "still running"))
 ok(satellite.hub.status()["connected"] and "media_control" in satellite.hub.tools, satellite.hub.status())
 ok(server.conv.wake_state()["satellite"] and server.conv.wake_state()["running"], "wake state")
-r=tools.available_functions["media_control"](action="status"); ok("Playing" in r, r)       # fake playerctl exists only on the "laptop"
-ok(shutil_which:=__import__("shutil").which("playerctl") is None, "server has no playerctl")
-r=tools.available_functions["clipboard_read"](); ok(r.startswith("Error"), r)
 _oc=tools.remote["call"]; CALLED=[]
 tools.remote["call"]=lambda n,a:(CALLED.append((n,a)),_oc(n,a))[1]
+r=tools.available_functions["media_control"](action="status"); ok(isinstance(r,str) and "offline" not in r and CALLED and CALLED[-1][0]=="media_control", (r,CALLED))      # answered by the agent process
 r=tools.available_functions["system_info"](); ok("Memory" in r and CALLED and CALLED[-1][0]=="system_info", (r,CALLED))
 n=len(CALLED); r=tools.available_functions["system_info"](where="server"); ok("Memory" in r and len(CALLED)==n, "server stays local")
 tools.remote["call"]=_oc

@@ -84,7 +84,7 @@ foreach ($l in $libs) {
     catch { Warn "could not download $($l[0]) from $($l[1])" }
 }
 
-# -- 4. restore the backup (same archive layout as backup.sh: works with a backup made on Linux) --
+# -- 4. restore the backup (also works with a backup made by the old Linux script) --
 if ($Restore) {
     Say "Restoring $Restore"
     if (-not (Test-Path $Restore)) { throw "backup file not found: $Restore" }

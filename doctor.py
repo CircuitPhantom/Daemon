@@ -68,7 +68,7 @@ try:
     import monitor
     v = monitor.ui_file_version()
     show(OK if v == monitor.UI_VERSION else BAD, f"index.html matches the server (page {v}, server {monitor.UI_VERSION})",
-         "an old index.html: copy the newest one (bash deploy.sh does that for every file)")
+         "an old index.html: copy the newest one from the repository")
 except Exception as e:
     show(BAD, f"monitor.py could not be loaded: {type(e).__name__}: {e}", "copy monitor.py and the other new files")
 copies = sorted(p.name for p in HERE.glob("*([0-9]).*"))

@@ -1,2 +1,0 @@
-#!/bin/sh
-echo "gimp-real $*" >> "$FAKELOG"; sleep 2

@@ -1,6 +1,6 @@
 # Packs everything that is *yours* (settings, calendar, chats, memory, logins) into one archive, to move Daemon
 # to another computer or to keep a backup. The code itself is not needed in it, copy the project folder separately.
-# The archive is a .tar.gz with the same layout as backup.sh makes, so Linux and Windows backups restore on either.
+# The archive is a .tar.gz (the same layout the old Linux script made, so such backups restore too).
 #
 #   .\backup.ps1                          settings, tasks, calendar, memory, reminders, chats, Spotify login
 #   .\backup.ps1 -WithSignal              ...and the Signal account (signal-cli data)

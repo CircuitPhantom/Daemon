@@ -3,17 +3,17 @@
 By default Daemon listens on `127.0.0.1:8000`: only the computer it runs on can open it. To use it from your phone or from another computer **do not** open the port to the internet. Use [Tailscale](https://tailscale.com) (a private network between your own devices; free for personal use).
 
 ## 1. Tailscale on the Daemon machine and your phone
-1. Install Tailscale on the Daemon machine (<https://tailscale.com/download>) and run `sudo tailscale up`. Install the Tailscale app on your phone and log in with the same account.
+1. Install Tailscale on the Daemon machine (<https://tailscale.com/download>) (`winget install Tailscale.Tailscale`) and sign in. Install the Tailscale app on your phone and log in with the same account.
 2. In the Tailscale admin console > **DNS**: make sure **MagicDNS** is on and **HTTPS Certificates** is enabled (needed for the next step and for installing the app).
 
 ## 2. Publish the dashboard inside your tailnet
-```bash
-sudo tailscale serve --bg --https=443 http://127.0.0.1:8000
+```powershell
+tailscale serve --bg --https=443 http://127.0.0.1:8000
 tailscale serve status
 ```
-Now `https://NAME.tailnet.ts.net` opens the dashboard on every device of your tailnet, and only on those. (`NAME` is the machine name shown by `tailscale status`.) Turn it off with `sudo tailscale serve reset`.
+Now `https://NAME.tailnet.ts.net` opens the dashboard on every device of your tailnet, and only on those. (`NAME` is the machine name shown by `tailscale status`.) Turn it off with `tailscale serve reset`. (Use an administrator PowerShell if Tailscale asks for it.)
 
-**Set a PIN** (`venv/bin/python set_pin.py`) so a lost or shared device cannot use your assistant.
+**Set a PIN** (`python set_pin.py`) so a lost or shared device cannot use your assistant.
 
 ## 3. Install it as an app on Android
 Open the address in Chrome > menu > **Install app** (the option only appears over HTTPS, which is why step 2 is needed). Daemon then has its own icon and window, and shows up in the **Share menu**: share a link, text, photo or file from any app and it lands in your inbox (tag `#shared`). On iPhone, use Safari > Share > Add to Home Screen; the Share-menu integration is Android/Chrome only.

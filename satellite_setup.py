@@ -20,14 +20,14 @@ if "--off" in sys.argv:
     print("Laptop agent link is off. This computer uses its own microphone and desktop tools again.")
     sys.exit(0)
 if "--new" in sys.argv or len(c["token"]) < 16:
-    c["token"] = secrets.token_urlsafe(32)
+    c["token"] = secrets.token_urlsafe(32).lstrip("-")   # a leading "-" would look like an option on a command line
 c["enabled"] = True
 model_config.save()
-print("Laptop agent link is on (config.yaml -> satellite). Restart the server: systemctl --user restart daemon")
+print("Laptop agent link is on (config.yaml -> satellite). Restart the server: Stop-ScheduledTask Daemon; Start-ScheduledTask Daemon")
 print()
 print("On the laptop run (use your server's Tailscale name):")
-print(f"  python daemon-agent.py --server http://SERVER:8000 --token {c['token']}")
-print("or put them in ~/.config/daemon-agent.json:")
+print(f"  python daemon-agent.py --server http://SERVER:8000 --token={c['token']}")
+print("or run .\\setup-agent.ps1 -Server ... -Token '...' (it saves them in %APPDATA%\\daemon-agent\\config.json):")
 print('  {"server": "http://SERVER:8000", "token": "%s"}' % c["token"])
 print()
 print("The token is a password for your laptop: do not share it.")

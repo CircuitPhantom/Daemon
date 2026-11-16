@@ -57,31 +57,30 @@ jobs:
 
 ## 3. Computer control (`computer` tool) - two switches, both off by default
 1. Server: enable the `computer` tool (Settings > Tools, or the Full profile). The model needs vision.
-2. Laptop: start the agent with `--allow screen_input` (add it to the service's ExecStart). Windows: `.\setup-agent.ps1 -Allow screen_input`. One computer, no agent: `DAEMON_ALLOW_INPUT=1` in `.env`.
+2. This PC: with a laptop agent, `.\setup-agent.ps1 -Allow screen_input`; one computer and no agent: `DAEMON_ALLOW_INPUT=1` in `.env` (restart the task).
 
-Install the helpers on the laptop (Arch): `sudo pacman -S ydotool wtype xdotool` (Wayland: `systemctl --user enable --now ydotool`,
-and your user must be allowed to use `/dev/uinput`, see the ydotool wiki). Copy `screeninput.py` next to `tools.py` (deploy.sh does it).
+Nothing to install on Windows (SendInput); see [docs/windows.md](docs/windows.md#tier-3-windows-computer-control) for how it works and its limits (administrator windows, UAC prompts, the lock screen).
 
 **Check it first:** `python daemon-agent.py --test-input` shows what was found, takes a screenshot and moves the pointer to the middle of
-the screen; it compares the real pointer position with the expected one (Hyprland and X11). If it says OFF BY n px, send me the output.
+the screen; it compares the real pointer position with the expected one. If it says OFF BY n px, send me the output.
 
 Safety:
 - the first action of a turn asks for your OK (dashboard buttons or `yes`/`no` on Signal); that OK covers the rest of that turn only
 - at most `computer.max_actions` (30) actions per turn; `blocked_keys` (ctrl+alt+delete, super+l ...) are refused
 - text is never typed into a window that looks like a password / authentication prompt
-- emergency brake: `touch ~/.daemon-stop` on the laptop refuses all mouse/keyboard actions until you delete the file
+- emergency brake: creating the file `$HOME\.daemon-stop` refuses all mouse/keyboard actions until you delete it
 - not available to scheduled tasks or background jobs
 - the screenshot is of the focused monitor only, with a labelled pixel grid
 - a yellow ring marks the pointer (where the last click went); `action=zoom` (x, y) sends a 4x enlarged piece with a fine grid in the same coordinates
 - `computer.coords`: `auto` (default) | `pixels` | `1000`. Models trained on a 0-1000 grid (Nemotron VL, Qwen3-VL, GLM-V, UI-TARS) get
   that grid (auto picks it from the model name); the server turns it into pixels
 
-Shortcuts: `computer action=shortcuts` gives the model your key bindings (live from `hyprctl binds`, so your dotfiles' own binds), plus
-anything you write in `~/.daemon-shortcuts.txt` on the laptop (e.g. `super+d: app launcher`, app-specific tips).
+Shortcuts: `computer action=shortcuts` gives the model your key bindings (the standard Windows shortcuts), plus
+anything you write in `%USERPROFILE%\.daemon-shortcuts.txt` (e.g. `super+d: show desktop`, app-specific tips).
 
 ## 4. Phone app + Share menu (Android Chrome)
 The browser only allows installing and sharing over HTTPS. With Tailscale:
-```bash
+```powershell
 tailscale serve --bg --https=443 http://127.0.0.1:8000
 ```
 Open `https://<machine>.<tailnet>.ts.net` on the phone > menu > Install app. After that, "Daemon" is in the Share menu: share a link,
@@ -89,7 +88,7 @@ text, photo or file from any app and it lands in the inbox (tag `#shared`).
 iOS has no share targets: make a Shortcut that POSTs `{"text": "..."}` to `/api/sat/inbox` with `Authorization: Bearer <satellite token>`.
 
 ## 5. Secrets in `.env` instead of config.yaml
-Put keys and tokens in a `.env` file next to `config.yaml` (`chmod 600 .env`; `.env.example` shows the format). Two ways to use it:
+Put keys and tokens in a `.env` file next to `config.yaml` (`.env.example` shows the format; keep the folder inside your user profile). Two ways to use it:
 - in `config.yaml`: `api_key: ${DAEMON_LLM_API_KEY}` (also `${NAME:-default}`, in any value)
 - or leave a key / token / secret / password field empty: it is filled from `DAEMON_<SECTION>_<FIELD>`
   (`llm.api_key` = `DAEMON_LLM_API_KEY`, `search.brave_key` = `DAEMON_SEARCH_BRAVE_KEY`, `notify.twilio_token` = `DAEMON_NOTIFY_TWILIO_TOKEN` ...)
@@ -97,8 +96,8 @@ Put keys and tokens in a `.env` file next to `config.yaml` (`chmod 600 .env`; `.
   `signal.account`, `signal.allowed`
 
 When a setting is changed in the dashboard the file is rewritten with the `${NAME}` kept, so a key from `.env` never ends up in
-`config.yaml`. A real environment variable (for example from a systemd `Environment=`) beats the same name in `.env`. Editing `.env`
-takes effect on the next message, like config.yaml. The backup includes `.env`; `deploy.sh` never touches it. `doctor.py` reports
+`config.yaml`. A real environment variable (for example one set with `[Environment]::SetEnvironmentVariable`) beats the same name in `.env`. Editing `.env`
+takes effect on the next message, like config.yaml. The backup includes `.env`. `doctor.py` reports
 missing names.
 
 Move the keys you already have: `python secrets_to_env.py` (dry run), then `python secrets_to_env.py --apply`

@@ -64,7 +64,7 @@ def main():
         return 0
     shutil.copy2(path, path.with_name(path.name + ".before-env"))
     if add:
-        mc.atomic_write(mc.ENV_PATH, (env_text.rstrip("\n") + "\n" if env_text.strip() else "# Daemon secrets. Keep this file private (chmod 600).\n") + "\n".join(add) + "\n")
+        mc.atomic_write(mc.ENV_PATH, (env_text.rstrip("\n") + "\n" if env_text.strip() else "# Daemon secrets. Keep this file private.\n") + "\n".join(add) + "\n")
     os.chmod(mc.ENV_PATH, 0o600)
     mc.atomic_write(path, "\n".join(lines) + "\n")
     print(f"\nmoved {len(found)} value(s). Old config.yaml: {path.name}.before-env (delete it when everything works: it still holds the keys).")

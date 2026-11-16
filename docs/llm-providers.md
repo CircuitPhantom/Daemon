@@ -36,4 +36,4 @@ Everything you say to Daemon, its tool results (file contents, command output, w
 `llm.base_url` can in principle point at a local OpenAI-compatible server (llama.cpp, vLLM, Ollama's `/v1`), but this is not tested and small local models are usually poor at tool calling. The speech models (Whisper, Kokoro) do run locally.
 
 ## Errors
-Quota, key and network errors are shown in the chat, and once on Signal if it is set up. `venv/bin/python doctor.py --online` tests the connection.
+Quota, key and network errors are shown in the chat, and once on Signal if it is set up. `.\venv\Scripts\python.exe doctor.py --online` tests the connection.

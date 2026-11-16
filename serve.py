@@ -5,7 +5,7 @@
   python serve.py --port 8001 --host 127.0.0.1 --log logs/daemon.log
   pythonw serve.py                                 no console window at all (the log file is the only output)
 
-On Linux the systemd service runs uvicorn directly; this file is not needed there."""
+install-service.ps1 starts the server through this file (Task Scheduler, at log on)."""
 import argparse
 import os
 import sys

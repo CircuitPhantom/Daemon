@@ -9,7 +9,7 @@
 | 2. App keys | Search by name ("play Creep") in Spotify's public catalog | A free Spotify developer app: `client_id` + `client_secret` |
 | 3. Login | Your own playlists, and playback on **other devices** (phone, speaker) | Level 2, plus a one-time login with `spotify_login.py`, and **Spotify Premium** for device control |
 
-"This computer" means the Spotify **desktop app** on the machine that runs the tools (the laptop, when the agent is connected). Install it first: Arch `spotify-launcher` (or the AUR/flatpak package), Debian/Ubuntu the snap or flatpak. Log in once in the app.
+"This computer" means the Spotify **desktop app** on the machine that runs the tools (the laptop, when the agent is connected). Install it first (`winget install Spotify.Spotify`, or the Microsoft Store version) and log in once in the app. Daemon opens songs through the `spotify:` link of the app and presses play through the Windows media session.
 
 ## Level 1: aliases (no account needed)
 In `config.yaml`:
@@ -37,17 +37,12 @@ In Spotify: right-click a playlist/album/track > Share > Copy link. Say "play my
 
 ## Level 3: log in as yourself
 Run this once **on the computer that runs the Daemon server** (not the laptop agent), in the project folder:
-```bash
-venv/bin/python spotify_login.py
+```powershell
+python spotify_login.py
 ```
 It prints a link (and tries to open it). Open it in a browser, press **Agree**. The browser is sent back to `http://127.0.0.1:8888/callback`, which the script is listening on, and shows "Login saved". The refresh token is stored in `spotify_token.json` next to `config.yaml`. Delete that file to log out.
 
-**The server has no screen or browser** (a headless Debian box)? The callback must reach the script, so forward the port from the machine where you have a browser:
-```bash
-ssh -L 8888:127.0.0.1:8888 you@server          # leave this open
-# on the server:  venv/bin/python spotify_login.py
-# open the printed link in the browser on your own computer
-```
+**The server runs on another computer without a browser?** The callback must reach the script, so forward the port from the machine where you have a browser (`ssh -L 8888:127.0.0.1:8888 you@server`, leave it open, run `python spotify_login.py` on the server, open the printed link on your own computer).
 
 Permissions requested: read your private/collaborative playlists, read and change playback state. Nothing else.
 
@@ -66,4 +61,4 @@ Permissions requested: read your private/collaborative playlists, read and chang
 | `Spotify refused the code (HTTP 400)` during login | Wrong client secret, or the Redirect URI in the dashboard is not exactly `http://127.0.0.1:8888/callback` |
 | `Port 8888 is busy` | Another program uses it. Stop it, then run the login again |
 | It opens the search page but does not play | Level 2 is missing, or the desktop app is not installed/logged in |
-| A device never starts the song | `venv/bin/python spotify_debug.py "device name"` tries every way to start a song and shows Spotify's answers |
+| A device never starts the song | `python spotify_debug.py "device name"` tries every way to start a song and shows Spotify's answers |

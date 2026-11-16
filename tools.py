@@ -32,7 +32,7 @@ MAX_OUT = int(os.environ.get("DAEMON_MAX_OUT", "4000"))   # characters returned 
 CMD_TIMEOUT = 20        # seconds a command may run
 FETCH_TIMEOUT = 15
 MAX_DOWNLOAD = 1_500_000
-UA = "Mozilla/5.0 (X11; Linux x86_64) Daemon/1.0"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Daemon/1.0"
 
 
 def _clip(text, n=MAX_OUT):
@@ -700,7 +700,7 @@ def _start_playing():
 
 def media_control(action: str) -> str:
     """
-    Control the music or video player (needs playerctl)
+    Control the music or video player
 
     Args:
       action: One of play, pause, toggle, next, previous (goes to the previous track), restart (rewinds the current track to its start), stop, status
@@ -992,7 +992,7 @@ def open_app(name: str) -> str:
     Start a desktop application by name
 
     Args:
-      name: Application name only, e.g. firefox, spotify, nautilus (no arguments)
+      name: Application name only, e.g. chrome, spotify, notepad (no arguments)
 
     Returns:
       result: Confirmation, or the names of similar applications if it was not found

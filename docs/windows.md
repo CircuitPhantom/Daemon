@@ -1,40 +1,28 @@
 # Daemon on Windows
 
-Status: **works**, tested by the author on one machine (Windows 11, Turkish Q keyboard, two screens, PowerShell 5.1, Python 3.13), with the server and the desktop tools on the same PC. Linux behaviour is unchanged (the test suite runs on both). This page lists what works, what does not and what is still untested.
+Daemon on this fork is for **Windows 10/11 only**. It was tested by the author on one machine (Windows 11, Turkish Q keyboard, two screens, PowerShell 5.1, Python 3.13), with the server and the desktop tools on the same PC. This page lists what works, what does not and what is still untested.
 
-| Tier | What | Status |
+| Part | What | Status |
 |---|---|---|
-| 0 | Server inside WSL2 | Works (below) |
-| 1 | Native Windows server | Works (tested, checklist below) |
-| 2 | Native Windows laptop agent (wake word, speakers, media keys, volume, clipboard, apps, screenshot) | Desktop tools work (tested through a local server); the separate agent task is untested |
-| 3 | Windows computer control (mouse + keyboard) | Works (tested on one PC with two screens) |
+| Server | dashboard, chat, tools, Signal, phone calls, background task | Works (tested, checklist below) |
+| Desktop tools | wake word, speakers, media keys, volume, clipboard, apps, screenshot | Work (tested through a local server); the separate agent task is untested |
+| Computer control | mouse + keyboard through `SendInput` | Works (tested on one PC with two screens) |
 
-## Tier 0: WSL2 (works today)
-The server runs unchanged inside WSL2 (Ubuntu). Follow [Getting started](getting-started.md) in the WSL2 terminal.
-```powershell
-wsl --install -d Ubuntu          # once, in an admin PowerShell, then reboot
-```
-Open the dashboard from Windows at `http://localhost:8000` (WSL2 forwards localhost).
-Limits: no microphone, speakers, clipboard, apps or desktop control of Windows from inside WSL2. For those use the native agent (tier 2).
-
-## What changed for Windows so far
+## What is special about Windows
 - Text files, config, chat and memory JSON are always read and written as UTF-8 (Turkish letters survive the Windows ANSI code page).
 - Atomic file saves retry when antivirus, backup or an editor holds the file for a moment.
-- The Linux-only "`.env` can be read by other users" warning is skipped (Windows has no mode bits).
 - `doctor.py` and the other command-line tools switch the console to UTF-8 and enable colours.
-- `.gitattributes` keeps `*.sh` and `tests/` on LF line endings in a Windows checkout.
-- `python tests/run.py` runs the test suite without bash. The `windows` CI job is informational until tier 1 is complete.
+- `.gitattributes` keeps `tests/` on LF line endings and the PowerShell scripts on CRLF.
+- Some Linux code paths are still in the source (they keep the code testable in a Linux sandbox) but are not tested or documented here.
 
-## Run the tests on Windows
+## Run the tests
 ```powershell
-winget install Gyan.FFmpeg OpenJS.NodeJS.LTS
-py -3.12 -m venv venv ; .\venv\Scripts\Activate.ps1
-pip install fastapi "uvicorn[standard]" pydantic python-multipart pyyaml requests numpy pillow pypdf httpx
-python tests\run.py
+.\setup.ps1                 # or just: winget install Gyan.FFmpeg OpenJS.NodeJS.LTS, then pip install -r requirements.txt
+python tests\run.py          # all tests; or: python tests\run.py twindesk
 ```
-Tests that still assume Linux commands will fail until tier 1/2; the list is expected to shrink with each step.
+CI runs the same on `windows-latest` (Python 3.10 and 3.12) and parse-checks every `.ps1` file.
 
-## Tier 1: native Windows server
+## Server
 Needs Windows 10 1809+ or 11 and PowerShell 5.1 (already there). In a normal (not administrator) PowerShell, in the project folder:
 ```powershell
 .\setup.ps1                  # winget programs, venv, pip packages, web libraries (-Models loads the speech models now)
@@ -44,20 +32,19 @@ python serve.py              # run it in this window, or:
 ```
 If PowerShell refuses to run scripts: `powershell -ExecutionPolicy Bypass -File .\setup.ps1`. Open `http://127.0.0.1:8000`.
 
-**What works:** dashboard, chat, memory, scheduler and reminders, files and web tools, `execute_command`, `system_info`, Signal, Twilio phone calls, speech-to-text and the voices, backups (`.\backup.ps1`, same archive format as `backup.sh`, so a Linux backup restores on Windows and back).
-**Not in the server (tier 2/3):** media keys, volume, clipboard, opening apps and links, screenshots and the wake word belong to the laptop agent (tier 2 below); the `computer` tool is tier 3. `doctor.py` skips the Linux desktop-tool checks.
+**What works:** dashboard, chat, memory, scheduler and reminders, files and web tools, `execute_command`, `system_info`, Signal, Twilio phone calls, speech-to-text and the voices, backups (`.\backup.ps1`, a `.tar.gz`).
+**Not in the server (laptop agent / computer control):** media keys, volume, clipboard, opening apps and links, screenshots and the wake word belong to the laptop agent (laptop agent below); the `computer` tool is described below.
 
-**Things that differ from Linux:**
+**Good to know:**
 - **Shell:** `execute_command` runs Windows PowerShell (`powershell.exe`, 5.1). The model is told so in its system prompt. Commands written for bash will fail.
 - **Background task, not a service:** a Windows service runs in session 0 and cannot reach your desktop. `install-service.ps1` registers a task at log on for your user (restarts after a crash, 5 times, 1 minute apart). It runs `pythonw.exe serve.py`; everything it prints goes to `logs\daemon.log`. Stop/start: `Stop-ScheduledTask -TaskName Daemon` / `Start-ScheduledTask -TaskName Daemon`. Remove: `.\install-service.ps1 -Remove`. NSSM would also restart it after a crash but needs an extra download and runs outside your desktop session, so it is not used.
 - **Search in files** uses `grep` when found, otherwise a built-in Python search (slower on big folders).
-- **Time zone:** the `tzdata` package is installed for you; set `notify.timezone` (e.g. `Europe/Istanbul`) in `config.yaml` as on Linux.
+- **Time zone:** the `tzdata` package is installed for you; set `notify.timezone` (e.g. `Europe/Istanbul`) in `config.yaml`.
 - **File permissions:** `.env` and backups are not "mode 600". `backup.ps1` limits the archive to your user with `icacls`; keep the project folder inside your user profile.
 - **Signal:** `signal-cli` needs Java 21+ and is not on winget: download the release zip from github.com/AsamK/signal-cli/releases, unzip it and add its `bin` folder to PATH (the program is `signal-cli.bat`). Its data folder is assumed to be `%USERPROFILE%\.local\share\signal-cli`; if yours differs set `signal.data_dir` in `config.yaml`.
 - **Tailscale:** `tailscale` works the same (`tailscale serve`, `tailscale funnel`); use an administrator PowerShell if it asks for it. Windows Firewall only asks when Daemon listens on a non-loopback address; the default is `127.0.0.1`.
-- **`deploy.sh`** (rsync/ssh from the author's laptop to his server) stays Linux/macOS only.
 
-### Manual test checklist (tier 1)
+### Manual test checklist (server)
 Run in PowerShell in the project folder; send me anything that does not match.
 | # | Command | Expect |
 |---|---|---|
@@ -79,8 +66,8 @@ Run in PowerShell in the project folder; send me anything that does not match.
 foreach ($f in 'setup','install-service','backup') { $e=$null; [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f.ps1",[ref]$null,[ref]$e) | Out-Null; "$f : $($e.Count) errors" }
 ```
 
-## Tier 2: native Windows laptop agent
-The agent is the small program that gives a Daemon on another computer (your Debian server) ears and hands on this PC: wake word, spoken replies, media keys, volume, clipboard, links, apps, screenshots, Spotify. Read [Laptop agent](laptop-agent.md) first; this section is what differs on Windows. On the **server**, run `python satellite_setup.py` as usual and copy the token.
+## Laptop agent
+The agent is the small program that gives a Daemon on another computer (a home server) ears and hands on this PC: wake word, spoken replies, media keys, volume, clipboard, links, apps, screenshots, Spotify. Read [Laptop agent](laptop-agent.md) first; this section is what differs on Windows. On the **server**, run `python satellite_setup.py` and copy the token.
 ```powershell
 .\setup-agent.ps1 -Server https://NAME.tailnet.ts.net -Token TOKEN     # venv, packages, settings, Task Scheduler task "Daemon Agent"
 .\agent-venv\Scripts\python.exe daemon-agent.py --probe               # what works on this desktop? (changes nothing)
@@ -88,7 +75,7 @@ The agent is the small program that gives a Daemon on another computer (your Deb
 Options: `-Device "mic name"` (names: `python -m sounddevice`), `-Allow execute_command,screen_input`, `-NoService` (start by hand), `-Print`, `-Remove`.
 The settings (with the token) are in `%APPDATA%\daemon-agent\config.json`, readable by your user only. The task runs `pythonw.exe daemon-agent.py` at log on and writes `logs\agent.log`. It is a task of your user, not a service, for the same reason as the server.
 
-**How each tool works here** (tool names, arguments and answers are the same as on Linux):
+**How each tool works here** :
 | Tool | Windows implementation | Needs |
 |---|---|---|
 | `media_control` | Windows media session (what Spotify, browsers and players register); media keys when that is missing | `winrt-*` packages for `status`, real play / pause and `restart` |
@@ -106,9 +93,8 @@ The settings (with the token) are in `%APPDATA%\daemon-agent\config.json`, reada
 - A normal agent cannot touch windows of programs running **as administrator** (Task Manager, an elevated PowerShell): Windows blocks that (UIPI). Screenshots of them work, clicks and keys do not. Run the agent elevated only if you really need that; I do not recommend it.
 - A locked screen, the login screen and UAC prompts (secure desktop) cannot be captured or controlled by any user program.
 - Apps in Store form open by their Start Menu name (`Get-StartApps` is asked once every 5 minutes and takes a moment the first time).
-- `ensure_session_env` (Wayland / D-Bus variables) is not needed on Windows and is skipped.
-
-### Manual test checklist (tier 2)
+- 
+### Manual test checklist (laptop agent)
 **One computer only (no separate server)?** Then you do not need the agent: the server on this PC runs the desktop tools itself. `setup.ps1` installs the same packages; use checklist items 1, 2, 5-12, and 13 through Settings > Wake word (the server listens to this PC's microphone). Items 3, 4, 14, 15 are for the agent.
 
 On the Windows PC, in the project folder. The server must already have `satellite.enabled` (`python satellite_setup.py`).
@@ -135,8 +121,8 @@ On the Windows PC, in the project folder. The server must already have `satellit
 foreach ($f in 'setup-agent') { $e=$null; [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f.ps1",[ref]$null,[ref]$e) | Out-Null; "$f : $($e.Count) errors" }
 ```
 
-## Tier 3: Windows computer control
-The `computer` tool (the model looks at a screenshot and clicks, types, presses keys, scrolls) works on Windows through `SendInput`; nothing to install. The safety model is the Linux one, unchanged:
+## Computer control
+The `computer` tool (the model looks at a screenshot and clicks, types, presses keys, scrolls) works on Windows through `SendInput`; nothing to install. The safety model:
 1. **Two switches, both off by default.** The `computer` tool must be enabled on the server (Settings > Tools, vision-capable model), and this PC must allow it: with a laptop agent start it with `-Allow screen_input` (`.\setup-agent.ps1 -Allow screen_input`); with the server on this same PC put `DAEMON_ALLOW_INPUT=1` in `.env` and restart the task.
 2. The first action of every turn asks for your approval; scheduled tasks and background jobs never get the tool; at most `computer.max_actions` actions per turn; `ctrl+alt+delete` and `super+l` stay blocked.
 3. **Emergency brake:** create the file `$HOME\.daemon-stop` (`New-Item $HOME\.daemon-stop`); while it exists every mouse / keyboard action is refused. `Remove-Item $HOME\.daemon-stop` to allow it again.
@@ -151,7 +137,7 @@ The `computer` tool (the model looks at a screenshot and clicks, types, presses 
 - Screens with different scaling work, but a screenshot shows one screen at a time (the one with the window in front); say "look at the other screen" so the model uses `text=<screen name>` (`DISPLAY1`, `DISPLAY2` ...).
 - `key` with a character the active layout has no key for (for example `|` on some layouts) falls back to the US key position, which may type something else; use `type` for such characters.
 
-### Manual test checklist (tier 3)
+### Manual test checklist (computer control)
 Open Notepad first and keep it small, so nothing important is under the pointer. Check the brake works before the rest.
 | # | Do | Expect |
 |---|---|---|

@@ -8,7 +8,7 @@ the parts. The rest lives in:
   api_settings.py   dashboard API: settings, voices, cloud model, PIN, security
   api_data.py       dashboard API: chats, memory, tasks, calendar, reminders, inbox, files
 
-Run: uvicorn server:app --host 127.0.0.1 --port 8000   (install-service.sh sets that up as a service)
+Run: uvicorn server:app --host 127.0.0.1 --port 8000   (install-service.ps1 sets that up as a scheduled task)
 """
 import os
 import platform_support
@@ -157,7 +157,7 @@ def index():
 
 @app.get("/api/health")
 def health():
-    """Is the server up, and do the server and the page belong together? (also used by deploy.sh)"""
+    """Is the server up, and do the server and the page belong together? (also used by the install scripts)"""
     return monitor.health()
 
 

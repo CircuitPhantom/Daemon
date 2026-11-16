@@ -2,7 +2,7 @@ name: tests
 on: [push, pull_request]
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       matrix:
         python: ["3.10", "3.12"]
@@ -13,20 +13,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "${{ matrix.python }}" }
       # The speech and LLM libraries are stubbed by the tests, so only the light dependencies are needed.
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg        # the tests make small audio files with it
-      - run: pip install fastapi "uvicorn[standard]" pydantic python-multipart pyyaml requests numpy pillow pypdf httpx
-      - run: bash tests/run.sh
-  windows:
-    # Informational while Windows support is being built: it shows what still fails, but does not block a merge.
-    runs-on: windows-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - run: choco install ffmpeg -y --no-progress
-      - run: pip install fastapi "uvicorn[standard]" pydantic python-multipart pyyaml requests numpy pillow pypdf httpx
+      - run: choco install ffmpeg -y --no-progress        # the tests make small audio files with it
+      - run: pip install fastapi "uvicorn[standard]" pydantic python-multipart pyyaml requests numpy pillow pypdf httpx psutil tzdata
       - run: python -m compileall -q .
       - run: python tests/run.py
+      - name: Parse the PowerShell scripts
+        shell: powershell
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem *.ps1) { $e = $null; [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$e) | Out-Null; if ($e.Count) { $e | ForEach-Object { Write-Host "$($f.Name): $($_.Message)" }; $bad++ } }
+          if ($bad) { exit 1 }

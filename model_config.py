@@ -22,7 +22,7 @@ import tools
 CONFIG_PATH = Path(os.environ.get("DAEMON_CONFIG") or Path(__file__).with_name("config.yaml"))
 ENV_PATH = Path(os.environ.get("DAEMON_ENV") or CONFIG_PATH.with_name(".env"))     # secrets: keys, tokens (see _resolve_env)
 
-DEFAULT_PROMPT = """You are a voice and chat assistant running on the user's Linux computer.
+DEFAULT_PROMPT = """You are a voice and chat assistant running on the user's Windows computer.
 
 Rules:
 - Give clear, technical and relevant answers.
