@@ -709,6 +709,9 @@ def media_control(action: str) -> str:
       result: What happened, or what is playing for status
     """
     a = action.strip().lower()
+    if platform_support.IS_WINDOWS and (a in _MEDIA or a in ("status", "restart", "rewind")):
+        import win_desktop
+        return win_desktop.media_control(a)
     if a == "status":
         st = _player_status()
         if st is None:
@@ -779,6 +782,11 @@ def volume(level: str) -> str:
       result: The volume after the change
     """
     lv = level.strip().lower().rstrip("%")
+    if platform_support.IS_WINDOWS:
+        if lv not in ("status", "mute", "unmute", "up", "down") and not lv.isdigit():
+            return "Error: level must be a number from 0 to 100, or up, down, mute, unmute, status"
+        import win_desktop
+        return win_desktop.volume(lv)
     wp = bool(shutil.which("wpctl"))
     sink = "@DEFAULT_AUDIO_SINK@" if wp else "@DEFAULT_SINK@"
     if lv == "status":
@@ -817,6 +825,13 @@ def clipboard_read() -> str:
     Returns:
       output: Clipboard text
     """
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        try:
+            out = win_desktop.clipboard_get()
+        except Exception as e:
+            return f"Error: {e}"
+        return _clip(out) if out else "Clipboard is empty"
     rd, _ = _clip_cmds()
     if not rd:
         return "Error: install wl-clipboard (Wayland) or xclip (X11)"
@@ -834,6 +849,13 @@ def clipboard_write(text: str) -> str:
     Returns:
       result: Confirmation
     """
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        try:
+            win_desktop.clipboard_set(text[:100_000])
+        except Exception as e:
+            return f"Error: could not write to the clipboard ({e})"
+        return f"Copied {len(text)} characters to the clipboard"
     _, wr = _clip_cmds()
     if not wr:
         return "Error: install wl-clipboard (Wayland) or xclip (X11)"
@@ -872,6 +894,12 @@ def open_url(url: str) -> str:
     u = urlparse(url.strip())
     if u.scheme not in ("http", "https") or not u.hostname:
         return "Error: the URL must start with http:// or https://"
+    if platform_support.IS_WINDOWS:
+        try:
+            os.startfile(url.strip())
+        except OSError as e:
+            return f"Error: {e}"
+        return f"Opened {url.strip()}"
     if not shutil.which("xdg-open"):
         return "Error: xdg-open is not installed"
     err = _detach(["xdg-open", url.strip()])
@@ -972,6 +1000,21 @@ def open_app(name: str) -> str:
     n = name.strip()
     if not re.fullmatch(r"[\w.+ -]{1,60}", n):
         return "Error: give just the application name, without arguments"
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        target, info = win_desktop.resolve_app(n, _app_aliases())
+        if not target:
+            hint = f" Similar: {', '.join(info)}." if info else ""
+            return f"Error: {n} was not found.{hint} Add your own name in config.yaml under app_aliases."
+        try:
+            err = win_desktop.launch(target)
+        except Exception as e:
+            return f"Error: could not start {n}: {e}"
+        if err:
+            return f"Error: {n} failed, {err}"
+        shown = os.path.basename(target[1]) if target[0] != "uwp" else info.replace("app ", "", 1)
+        same = shown.lower() in (n.lower(), n.lower() + ".exe", n.lower() + ".lnk")
+        return f"Started {n}" + ("" if same else f" (as {shown})")
     cmd, info = _resolve_app(n)
     if not cmd:
         hint = f" Similar: {', '.join(info)}." if info else ""
@@ -1149,6 +1192,9 @@ def _spotify_open(uri, play=True):
     if _remote("spotify_open"):
         r = remote["call"]("spotify_open", {"uri": uri, "play": play})
         return "" if r == "ok" else (r or "Error: no answer from the laptop")
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        return win_desktop.spotify_open(uri, play)
     if not shutil.which("playerctl"):
         return "Error: playerctl is not installed"
     p = _spotify_player()
@@ -1485,13 +1531,17 @@ def _grab_screen(focus=False, units="", monitor=""):
                 order.insert(0, box_cmd)
         except Exception:
             box = None
-    if focus and ptr is None:
+    if focus and ptr is None and not platform_support.IS_WINDOWS:
         try:
             import screeninput
             ptr = screeninput.pointer_position(screeninput.detect())          # X11
         except Exception:
             ptr = None
     raw, err, used_box = None, "", None
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        raw, used_box, mon_name, mon_list, ptr = win_desktop.grab(focus, monitor)
+        order = []
     with tempfile.TemporaryDirectory(prefix="daemon-shot-") as d:
         f = os.path.join(d, "s.png")
         for cmd in order:
@@ -1694,6 +1744,9 @@ def _save_shot(data, ext="jpg"):
 
 def _active_window():
     """Title (and app) of the window in front, or ''. Tries Hyprland, Sway, KDE and X11 helpers."""
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        return win_desktop.active_window()
     def run(cmd):
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3)

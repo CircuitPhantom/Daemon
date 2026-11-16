@@ -3,5 +3,14 @@ numpy
 sounddevice
 websockets>=12
 faster-whisper      # speech-to-text on the laptop (wake word + commands)
+pillow              # screenshots
+# Windows desktop tools (volume, what is playing, screenshots): see docs/windows.md
+pycaw; sys_platform == "win32"
+winrt-runtime; sys_platform == "win32"
+winrt-Windows.Media.Control; sys_platform == "win32"
+winrt-Windows.Foundation; sys_platform == "win32"
+winrt-Windows.Foundation.Collections; sys_platform == "win32"
+psutil; sys_platform == "win32"
+tzdata; sys_platform == "win32"
 # only if the server uses wake.engine: openwakeword
 # openwakeword

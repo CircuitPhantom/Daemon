@@ -25,7 +25,7 @@ for tool in ("node", "ffmpeg"):
         print(f"warning: {tool} not found, some tests will fail")
 work = Path(tempfile.mkdtemp(prefix="daemon-tests-"))
 try:
-    for f in list(ROOT.glob("*.py")) + [ROOT / "index.html"]:
+    for f in list(ROOT.glob("*.py")) + list(ROOT.glob("*.ps1")) + list(ROOT.glob("requirements*.txt")) + [ROOT / "index.html"]:
         shutil.copy2(f, work)
     for item in HERE.iterdir():
         if item.name in ("run.sh", "run.py", "__pycache__"):

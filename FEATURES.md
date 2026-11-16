@@ -19,7 +19,7 @@ Desktop, Full (every tool) or your own (`tool_profiles` in `config.yaml`). Tools
 | Screen | `screenshot`*, `computer` (look, click, type, keys; see section 3) |
 
 `execute_command`, `system_info` and the desktop tools run on the laptop when the agent is connected and allows them
-(`satellite.tools`, `--allow`), otherwise on the server. Adding a tool: write a function with type hints and a docstring in
+(`satellite.tools`, `--allow`), otherwise on the server. On Windows the laptop agent implements them natively (media session, endpoint volume, clipboard, Start Menu apps; see [docs/windows.md](docs/windows.md)). Adding a tool: write a function with type hints and a docstring in
 `tools.py`, register it in `available_functions`, and add it to a profile in `model_config.py`.
 
 Details of the larger features follow.

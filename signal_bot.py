@@ -231,7 +231,7 @@ class SignalBot:
 
     def _spawn(self, c):
         if not shutil.which(c["cli"]):
-            self.error = f"{c['cli']} is not installed (Arch: signal-cli)"
+            self.error = f"{c['cli']} is not installed (" + ("download it from github.com/AsamK/signal-cli/releases and add its bin folder to PATH" if platform_support.IS_WINDOWS else "Arch: signal-cli") + ")"
             return False
         try:
             p = subprocess.Popen(

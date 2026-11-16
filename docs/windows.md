@@ -6,7 +6,7 @@ Status: **work in progress**. Daemon is developed on Linux; Windows support is a
 |---|---|---|
 | 0 | Server inside WSL2 | Works (below) |
 | 1 | Native Windows server | Written, waiting for your test (below) |
-| 2 | Native Windows laptop agent (wake word, speakers, media keys, volume, clipboard, apps, screenshot) | Planned |
+| 2 | Native Windows laptop agent (wake word, speakers, media keys, volume, clipboard, apps, screenshot) | Written, waiting for your test (below) |
 | 3 | Windows computer control (mouse + keyboard) | Planned, needs real-hardware testing |
 
 ## Tier 0: WSL2 (works today)
@@ -45,7 +45,7 @@ python serve.py              # run it in this window, or:
 If PowerShell refuses to run scripts: `powershell -ExecutionPolicy Bypass -File .\setup.ps1`. Open `http://127.0.0.1:8000`.
 
 **What works:** dashboard, chat, memory, scheduler and reminders, files and web tools, `execute_command`, `system_info`, Signal, Twilio phone calls, speech-to-text and the voices, backups (`.\backup.ps1`, same archive format as `backup.sh`, so a Linux backup restores on Windows and back).
-**Not yet (tier 2/3):** media keys, volume, clipboard, opening apps and links, screenshots, wake word, the `computer` tool. `doctor.py` skips those checks for now.
+**Not in the server (tier 2/3):** media keys, volume, clipboard, opening apps and links, screenshots and the wake word belong to the laptop agent (tier 2 below); the `computer` tool is tier 3. `doctor.py` skips the Linux desktop-tool checks.
 
 **Things that differ from Linux:**
 - **Shell:** `execute_command` runs Windows PowerShell (`powershell.exe`, 5.1). The model is told so in its system prompt. Commands written for bash will fail.
@@ -77,6 +77,60 @@ Run in PowerShell in the project folder; send me anything that does not match.
 **Untested:** everything above on real Windows. The PowerShell scripts were not run or syntax-checked before delivery; check them first:
 ```powershell
 foreach ($f in 'setup','install-service','backup') { $e=$null; [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f.ps1",[ref]$null,[ref]$e) | Out-Null; "$f : $($e.Count) errors" }
+```
+
+## Tier 2: native Windows laptop agent
+The agent is the small program that gives a Daemon on another computer (your Debian server) ears and hands on this PC: wake word, spoken replies, media keys, volume, clipboard, links, apps, screenshots, Spotify. Read [Laptop agent](laptop-agent.md) first; this section is what differs on Windows. On the **server**, run `python satellite_setup.py` as usual and copy the token.
+```powershell
+.\setup-agent.ps1 -Server https://NAME.tailnet.ts.net -Token TOKEN     # venv, packages, settings, Task Scheduler task "Daemon Agent"
+.\agent-venv\Scripts\python.exe daemon-agent.py --probe               # what works on this desktop? (changes nothing)
+```
+Options: `-Device "mic name"` (names: `python -m sounddevice`), `-Allow execute_command,screen_input`, `-NoService` (start by hand), `-Print`, `-Remove`.
+The settings (with the token) are in `%APPDATA%\daemon-agent\config.json`, readable by your user only. The task runs `pythonw.exe daemon-agent.py` at log on and writes `logs\agent.log`. It is a task of your user, not a service, for the same reason as the server.
+
+**How each tool works here** (tool names, arguments and answers are the same as on Linux):
+| Tool | Windows implementation | Needs |
+|---|---|---|
+| `media_control` | Windows media session (what Spotify, browsers and players register); media keys when that is missing | `winrt-*` packages for `status`, real play / pause and `restart` |
+| `volume` | the default speaker's endpoint volume (exact percentages, mute) | `pycaw` |
+| `clipboard_read/write` | the Windows clipboard, text (Turkish letters and line breaks survive) | nothing |
+| `open_url` | your default browser | nothing |
+| `open_app` | your `app_aliases`, program on PATH, registered program, Start Menu shortcut, Store app (`Get-StartApps`) | nothing |
+| `spotify_play` etc. | the desktop Spotify through its `spotify:` link, then play through the media session | Spotify desktop |
+| `screenshot`, `computer` screenshots | all screens, or the screen of the window in front; real pixels (per-monitor DPI aware) | `pillow` |
+| wake word replies | played with Windows' own sound API | nothing |
+
+**Limits, honestly:**
+- Without the `winrt-*` packages `media_control` can only press media keys: `play` and `pause` both send "play/pause" (a toggle), and `status` / `restart` answer with an error that names the packages. `setup-agent.ps1` installs them; if pip cannot get one for your Python, `--probe` shows `media session` as FAIL.
+- Spotify decides what a `spotify:` link does; Windows' media session is used to press play afterwards. If it opens the song but does not play, tell me what `--probe` says for `media session`.
+- A normal agent cannot touch windows of programs running **as administrator** (Task Manager, an elevated PowerShell): Windows blocks that (UIPI). Screenshots of them work, clicks and keys do not. Run the agent elevated only if you really need that; I do not recommend it.
+- A locked screen, the login screen and UAC prompts (secure desktop) cannot be captured or controlled by any user program.
+- Apps in Store form open by their Start Menu name (`Get-StartApps` is asked once every 5 minutes and takes a moment the first time).
+- `ensure_session_env` (Wayland / D-Bus variables) is not needed on Windows and is skipped.
+
+### Manual test checklist (tier 2)
+On the Windows PC, in the project folder. The server must already have `satellite.enabled` (`python satellite_setup.py`).
+| # | Do | Expect |
+|---|---|---|
+| 1 | `python tests\run.py twindesk` | `ok twindesk` |
+| 2 | `.\agent-venv\Scripts\python.exe daemon-agent.py --probe` | all ten lines `OK` (`Store apps` and `Spotify` may be FAIL if you have none); send me every FAIL line |
+| 3 | `.\setup-agent.ps1 -Server ... -Token ...` | "server answered, token accepted", task installed, last log lines say `connected to` |
+| 4 | Dashboard > Settings > Voice > Wake word | "Laptop agent connected" |
+| 5 | Chat: "pause the music" while Spotify or a YouTube video plays | it pauses; "play" resumes; "next song" skips |
+| 6 | Chat: "what is playing?" | `Playing: artist - title (app)` |
+| 7 | Chat: "volume 30", "turn it up", "mute", "unmute", "what is the volume" | the speaker slider follows; answers `Volume is N%` |
+| 8 | Chat: "copy 'çay ğüşöı' to my clipboard", paste in Notepad; copy text with Ctrl+C, ask "what is in my clipboard" | exact text both ways |
+| 9 | Chat: "open github.com in my browser" | default browser opens it |
+| 10 | Chat: "open notepad", "open calculator", "open <a program you installed>" | each starts; a wrong name answers with `Similar: ...` |
+| 11 | Chat: "play Radiohead Creep on Spotify" (needs the Spotify login of the server and Spotify desktop) | Spotify opens it and plays |
+| 12 | Chat: "take a screenshot" (with two monitors if you have them) | the picture shows all screens; `window` names the program in front |
+| 13 | Say "hey daemon, what time is it" | spoken reply from your speakers |
+| 14 | Reboot, log in | `Get-ScheduledTask "Daemon Agent"` is `Running`; `logs\agent.log` has lines; the dashboard shows "connected" again |
+| 15 | `Stop-ScheduledTask -TaskName "Daemon Agent"; Get-Process pythonw` | no agent process left |
+
+**Untested:** everything in `win_desktop.py` on real Windows (the logic is covered by mocked tests, the Windows API calls are not). `--probe` and this list are how we find out. `setup-agent.ps1` was not run before delivery; parse-check it first:
+```powershell
+foreach ($f in 'setup-agent') { $e=$null; [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f.ps1",[ref]$null,[ref]$e) | Out-Null; "$f : $($e.Count) errors" }
 ```
 
 ## Troubleshooting

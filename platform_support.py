@@ -4,6 +4,7 @@ Later steps add the per-OS tool layer (media, volume, clipboard, ...) here and i
 import os
 import sys
 import time
+from pathlib import Path
 
 IS_WINDOWS = sys.platform == "win32"
 NO_WINDOW = 0x08000000 if IS_WINDOWS else 0          # subprocess creationflags: no console window flashing up (0 elsewhere)
@@ -89,3 +90,32 @@ def backup_scheduled():
 def shell_hint():
     """One line for the model about the shell execute_command uses on this computer ('' on Linux, where it is the usual sh)."""
     return backend().SHELL_HINT
+
+
+MAX_LOG = 5 * 1024 * 1024
+
+
+def redirect_output(path):
+    """stdout/stderr (also of child processes) go to the file. A big old log is kept once as .1."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        if path.exists() and path.stat().st_size > MAX_LOG:
+            os.replace(path, path.with_name(path.name + ".1"))
+    except OSError:
+        pass
+    f = open(path, "a", encoding="utf-8", errors="replace", buffering=1)
+    try:
+        os.dup2(f.fileno(), 1)
+        os.dup2(f.fileno(), 2)
+    except OSError:
+        pass
+    sys.stdout = sys.stderr = f
+    return f
+
+
+def agent_config_path():
+    """Where the laptop agent keeps its settings: ~/.config/daemon-agent.json, on Windows %APPDATA%\\daemon-agent\\config.json."""
+    if IS_WINDOWS:
+        return Path(os.environ.get("APPDATA") or Path.home() / "AppData" / "Roaming") / "daemon-agent" / "config.json"
+    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "daemon-agent.json"

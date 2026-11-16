@@ -139,11 +139,11 @@ if mc.satellite["enabled"]:
     show(WARN, "the server's own microphone is not used (the laptop agent does that); tools sent to the laptop: " + ", ".join(mc.satellite["tools"]))
     if mc.wake["enabled"] is False:
         show(WARN, "wake.enabled is false: the laptop agent will not listen for the wake word", "turn on Settings > Wake word in the dashboard")
-agent_conf = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "daemon-agent.json"
+agent_conf = platform_support.agent_config_path()
 if agent_conf.exists():
     import json
     import urllib.request
-    c = json.loads(agent_conf.read_text(encoding="utf-8"))
+    c = json.loads(agent_conf.read_text(encoding="utf-8-sig"))
     try:
         urllib.request.urlopen(urllib.request.Request(c["server"].rstrip("/") + "/api/sat/config", headers={
             "Authorization": "Bearer " + c["token"], "User-Agent": "daemon-agent/1.0"}), timeout=8)
@@ -152,6 +152,15 @@ if agent_conf.exists():
         show(BAD, f"this laptop cannot use {c['server']}: {e}", "check the address (the one you open the dashboard with), the token, and satellite.enabled on the server")
     out = platform_support.service_state("daemon-agent")
     show(OK if out == "active" else WARN, f"daemon-agent {'task' if WIN else 'service'}: {out or 'not installed'}", pick("./setup-agent.sh", ".\\setup-agent.ps1"))
+    if WIN:
+        import importlib.util
+        for mod, what, pkg in (("pycaw", "volume", "pycaw"), ("winrt.windows.media.control", "what is playing / real pause", "winrt-runtime winrt-Windows.Media.Control winrt-Windows.Foundation winrt-Windows.Foundation.Collections"),
+                               ("PIL", "screenshots", "pillow"), ("sounddevice", "microphone", "sounddevice")):
+            try:
+                have = importlib.util.find_spec(mod) is not None
+            except (ImportError, ValueError):
+                have = False
+            show(OK if have else WARN, f"{mod}: {what}" + ("" if have else " is not available"), "" if have else "pip install " + pkg)
 elif not mc.satellite["enabled"]:
     show(OK, "single-computer setup (no laptop agent)")
 

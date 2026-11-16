@@ -37,7 +37,7 @@ cd ~/daemon                               # the clone on the laptop
 - Options: `--device "mic name"` (list names with `python -m sounddevice`), `--no-service`, `--no-system`, `--allow <tool>` (below), `--remove` (uninstall the service).
 
 **3. Check.** In the dashboard: **Settings > Voice > Wake word** should say "Laptop agent connected". Then say "hey daemon, what time is it" or ask in the dashboard to "pause the music".
-Logs: `journalctl --user -u daemon-agent -f`.
+Logs: `journalctl --user -u daemon-agent -f` (Windows: `Get-Content logs\agent.log -Wait -Tail 30`).
 
 ## Choosing what the model may do on the laptop
 Two lists have to agree:
@@ -59,6 +59,8 @@ Details are in [FEATURES.md](../FEATURES.md#3-computer-control-computer-tool---t
 - Test before trusting it: `venv/bin/python daemon-agent.py --test-input` takes a screenshot and moves the pointer to the middle of the screen.
 - The first action of each turn asks for your approval; at most `computer.max_actions` actions per turn; some key combos are blocked; typing into password prompts is refused.
 - Emergency brake: `touch ~/.daemon-stop` on the laptop. Delete the file to allow input again.
+
+**Windows:** `.\setup-agent.ps1 -Server https://NAME.tailnet.ts.net -Token TOKEN` does the same with a Task Scheduler task (no administrator, no system packages); see [Windows](windows.md#tier-2-native-windows-laptop-agent). `python daemon-agent.py --probe` checks what works on that desktop.
 
 ## Running the agent by hand
 ```bash

@@ -7,7 +7,7 @@ Two engines (config.yaml -> wake.engine):
                 "hey jarvis", or a custom .onnx model you trained (see the openWakeWord docs).
 
 Needs: pip install sounddevice  (and the portaudio package: sudo pacman -S portaudio)
-Replies play with pw-play, paplay or aplay. The conversation goes into the active chat, so the web UI
+Replies play with pw-play, paplay or aplay (Windows: winsound). The conversation goes into the active chat, so the web UI
 shows it too.
 """
 import io
@@ -23,6 +23,7 @@ import wave
 import numpy as np
 
 import model_config
+import platform_support
 
 SR = 16000
 FRAME = 1280                  # 80 ms, the frame size openWakeWord expects
@@ -101,6 +102,13 @@ def player_cmd():
 
 
 def play(data):
+    if platform_support.IS_WINDOWS:                        # no external player: winsound plays the WAV from memory (waits until done)
+        try:
+            import winsound
+            winsound.PlaySound(bytes(data), winsound.SND_MEMORY)
+        except Exception as e:
+            print("[wake] playback failed:", e)
+        return
     cmd = player_cmd()
     if not cmd:
         print("[wake] no audio player found (install pipewire, pulseaudio-utils or alsa-utils)")

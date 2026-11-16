@@ -12,26 +12,9 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-MAX_LOG = 5 * 1024 * 1024
-
-
-def redirect_output(path):
-    """stdout/stderr (also of child processes) go to the file. A big old log is kept once as .1."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        if path.exists() and path.stat().st_size > MAX_LOG:
-            os.replace(path, path.with_name(path.name + ".1"))
-    except OSError:
-        pass
-    f = open(path, "a", encoding="utf-8", errors="replace", buffering=1)
-    try:
-        os.dup2(f.fileno(), 1)
-        os.dup2(f.fileno(), 2)
-    except OSError:
-        pass
-    sys.stdout = sys.stderr = f
-    return f
+sys.path.insert(0, str(HERE))
+import platform_support
+redirect_output = platform_support.redirect_output
 
 
 def main():

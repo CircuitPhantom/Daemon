@@ -9,6 +9,7 @@ What it does
   * Keeps a connection open so the model can use this computer's media keys, volume, clipboard, links and apps.
 
 Needs on the laptop:  pip install numpy sounddevice websockets faster-whisper   (+ portaudio, playerctl, wl-clipboard or xclip)
+                      Windows: pip install -r requirements-agent.txt, then .\\setup-agent.ps1 (see docs/windows.md)
                       pip install openwakeword                    (only if the server uses wake.engine: openwakeword)
 Files next to it:     tools.py, wakeword.py and screeninput.py (copy them from the Daemon folder)
 
@@ -19,9 +20,10 @@ Files next to it:     tools.py, wakeword.py and screeninput.py (copy them from t
   python daemon-agent.py --allow execute_command   also let the model run shell commands here (off by default)
   python daemon-agent.py --allow screen_input      let the model use the mouse and keyboard here (the `computer` tool; off by default)
   python daemon-agent.py --test-input              check the mouse/keyboard tools of this desktop (moves the pointer to the screen's middle)
+  python daemon-agent.py --probe                   Windows: check media, volume, clipboard, screenshot and apps (changes nothing)
   touch ~/.daemon-stop                             emergency brake: while this file exists the mouse and keyboard are refused
 
-Settings can also be saved in ~/.config/daemon-agent.json: {"server": "...", "token": "...", "device": "", "allow": [],
+Settings can also be saved in ~/.config/daemon-agent.json (Windows: %APPDATA%\\daemon-agent\\config.json): {"server": "...", "token": "...", "device": "", "allow": [],
 "stt_model": "small", "stt_device": "cpu", "stt_compute": "int8"}
 """
 import argparse
@@ -41,7 +43,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-CONF = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "daemon-agent.json"
+CONF = platform_support.agent_config_path()
 SAFE = {"system_info", "media_control", "volume", "clipboard_read", "clipboard_write", "open_url", "open_app", "spotify_open", "screen_grab"}
 UA = "daemon-agent/1.0"
 
@@ -123,7 +125,7 @@ class Server:
 def load_args():
     saved = {}
     try:
-        saved = json.loads(CONF.read_text(encoding="utf-8"))
+        saved = json.loads(CONF.read_text(encoding="utf-8-sig"))
     except Exception:
         pass
     ap = argparse.ArgumentParser(description="Daemon laptop agent")
@@ -132,13 +134,15 @@ def load_args():
     ap.add_argument("--device", default=saved.get("device", ""), help="microphone name or number (python -m sounddevice)")
     ap.add_argument("--allow", action="append", default=list(saved.get("allow") or []), help="extra tool the server may run here")
     ap.add_argument("--no-wake", action="store_true", help="no microphone, desktop commands only")
+    ap.add_argument("--log", default="", help="write all output to this file (for the background task on Windows)")
+    ap.add_argument("--probe", action="store_true", help="Windows: check media, volume, clipboard, screenshot and apps on this desktop and exit")
     ap.add_argument("--test-input", action="store_true", help="check mouse/keyboard control on this desktop and exit")
     ap.add_argument("--stt-model", default=saved.get("stt_model", "small"), help="local Whisper model: tiny, base, small, medium...")
     ap.add_argument("--stt-device", default=saved.get("stt_device", "cpu"), help="cpu or cuda")
     ap.add_argument("--stt-compute", default=saved.get("stt_compute", "int8"), help="int8 (cpu) or float16 (cuda)")
     ap.add_argument("--server-stt", action="store_true", default=bool(saved.get("server_stt", False)), help="do the speech-to-text on the server")
     a = ap.parse_args()
-    if a.test_input:
+    if a.test_input or a.probe:
         return a
     if not a.server or not a.token:
         ap.error("--server and --token are needed (python satellite_setup.py on the server prints them)")
@@ -218,6 +222,9 @@ def run_tool(funcs, name, args):
 
 def desktop_name():
     """'Arch Linux, Hyprland (wayland)': tells the model what it is working with."""
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        return win_desktop.os_name()[:80]
     distro = ""
     try:
         for ln in open("/etc/os-release", encoding="utf-8"):
@@ -338,9 +345,27 @@ def test_input():
     return 0
 
 
+def probe():
+    import win_desktop
+    if not platform_support.IS_WINDOWS:
+        print("--probe is for Windows. On Linux use --test-input.")
+        return 1
+    lines = win_desktop.probe()
+    print("\n".join(lines))
+    print("\nOK = works. FAIL = read the text after it. Windows apps that run as administrator ignore a normal agent (see docs/windows.md).")
+    return 0 if all(x.startswith("OK") for x in lines) else 1
+
+
 def main():
     platform_support.setup_console()
     a = load_args()
+    if a.log:
+        platform_support.redirect_output(a.log)
+    if platform_support.IS_WINDOWS:
+        import win_desktop
+        win_desktop.set_dpi_aware()
+    if a.probe:
+        sys.exit(probe())
     if a.test_input:
         sys.exit(test_input())
     srv = Server(a.server, a.token)

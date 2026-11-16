@@ -9,7 +9,7 @@ for c in python3 node ffmpeg; do command -v "$c" >/dev/null || echo "warning: $c
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(dirname "$HERE")"
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
-cp "$ROOT"/*.py "$ROOT"/index.html "$WORK"/
+cp "$ROOT"/*.py "$ROOT"/*.ps1 "$ROOT"/requirements*.txt "$ROOT"/index.html "$WORK"/
 cp -a "$HERE"/. "$WORK"/ && rm -f "$WORK/run.sh"
 cd "$WORK" || exit 1
 tests=("$@"); [[ ${#tests[@]} -eq 0 ]] && mapfile -t tests < <(ls t*.py | sed 's/\.py$//' | sort)

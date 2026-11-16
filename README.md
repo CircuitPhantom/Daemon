@@ -90,7 +90,7 @@ The tests use stubs for the speech and LLM libraries, so no models, network or A
 ## Third-party software and services
 Nothing third-party is bundled in this repository. Dependencies are installed by `pip` / `setup.sh` under their own licenses:
 FastAPI, Uvicorn, Pydantic, PyYAML, Requests, NumPy, Pillow, pypdf (permissive licenses), faster-whisper and the Whisper models (MIT),
-pykokoro and the Kokoro voice model (Apache 2.0). On Windows also psutil (BSD-3-Clause) and tzdata (Apache 2.0). The dashboard libraries three.js (MIT), marked (MIT) and highlight.js (BSD-3-Clause)
+pykokoro and the Kokoro voice model (Apache 2.0). On Windows also psutil (BSD-3-Clause), tzdata (Apache 2.0), pycaw and comtypes (MIT) and the pywinrt packages `winrt-*` (MIT) for the laptop agent. The dashboard libraries three.js (MIT), marked (MIT) and highlight.js (BSD-3-Clause)
 are downloaded from jsDelivr by `setup.sh`. The dashboard uses your system fonts and loads nothing from third-party servers at runtime.
 
 Optional online services follow their own terms, which you accept by enabling them: your LLM provider, ElevenLabs, Groq, Twilio, Spotify
