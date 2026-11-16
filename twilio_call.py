@@ -149,8 +149,8 @@ def place_twiml(twiml):
     """Rings the phone and runs `twiml` when it is picked up. Returns (ok, info). Never raises."""
     c = _cfg()
     if not (c["sid"] and c["token"] and c["from"] and c["to"]):
-        return False, ("not configured (set notify.twilio_sid, twilio_token, twilio_from "
-                       "and twilio_to in config.yaml)")
+        return False, ("not configured (set DAEMON_NOTIFY_TWILIO_SID, DAEMON_NOTIFY_TWILIO_TOKEN, DAEMON_NOTIFY_TWILIO_FROM "
+                       "and DAEMON_NOTIFY_TWILIO_TO in .env)")
     if not _allow():
         return False, f"limit reached ({c['max_per_hour']} calls per hour, notify.twilio_max_per_hour)"
     data = urllib.parse.urlencode({

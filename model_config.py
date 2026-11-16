@@ -264,10 +264,10 @@ _HEADER = (
     "# memory: persistent notes for chats (enabled, auto_save). Tasks never use them.\n"
     "# search: web search (provider, brave_key, searxng_url, results, region). jobs: background jobs started with /job (max_running, timeout_minutes, tools). computer: mouse and keyboard control through the laptop agent (max_actions, blocked_keys).\n"
     "# llm: the cloud model (base_url, api_key, model; Anthropic, Groq, NVIDIA...). elevenlabs: cloud voice with fallback to the local one (api_key, voice_id, local_only...). edge_tts: free Edge voice (enabled, voice, rate, pitch, fallback). uploads: photos and files sent from the dashboard and Signal (enabled, dir, max_mb, max_chars, vision). security: ask before risky tools (confirm, confirm_tools, confirm_seconds). care: Signal alerts when something breaks, weekly memory check, morning plan extras (watchdog, memory_review, briefing_extras, briefing_city...). stt_cloud: speech-to-text in the cloud with local fallback (api_key, base_url, model). satellite: laptop agent for the microphone and desktop tools (satellite_setup.py). auth: PIN lock for the dashboard (enabled: false turns it off). calendar: daily plan call (briefing, briefing_time). wake: wake word on this computer's microphone. signal: chat over Signal (signal_bot.py). tool_profiles: named tool sets for the web UI.\n"
-    "# app_aliases: names for open_app, e.g. spotify: spotify-launcher\n"
+    "# app_aliases: names for open_app, e.g. vscode: C:\\Users\\you\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe (only needed when the name is not found by itself)\n"
     "# spotify / spotify_aliases: for the spotify_play tool (client_id + client_secret from developer.spotify.com, and your own names for links)\n"
     "# Restart the server after changing stt/tts.\n"
-    "# notify: timezone, dashboard address and phone call (Twilio) settings. Keep this file private. Keys and tokens can live in .env instead: write api_key: ${NAME} here, NAME=value in .env.\n"
+    "# notify: timezone, dashboard address and phone call (Twilio) settings. Keep this file private. Secrets (keys, tokens, phone numbers) are read from .env: the fields below say ${DAEMON_...:-} and the values go in .env (copy .env.example).\n"
     "# Note: when a setting changes from the web UI the file is rewritten, so your own comments are lost.\n\n"
 )
 

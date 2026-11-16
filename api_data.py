@@ -436,17 +436,20 @@ def get_download(rel: str, src: str = "files"):
         return serve_path(uploads.resolve(rel))
     root = Path(os.path.realpath(tools._files_dir()))
     p = Path(os.path.realpath(root / rel)) if rel and not rel.startswith(("/", "\\")) else None
-    return serve_path(p if p and p.is_file() and root in p.parents else None)
+    return serve_path(p if p and p.is_file() and root in p.parents else None, prefixed=False)
 
 
-def serve_path(p):
+def serve_path(p, prefixed=True):
+    """prefixed: the file is an upload, stored as <random hex>-<name>; the download gets the name without that prefix."""
     if p is None:
         raise HTTPException(status_code=404, detail="file not found")
     ext = p.suffix.lower().lstrip(".")
     h = {"X-Content-Type-Options": "nosniff", "Cache-Control": "private, max-age=3600", "Content-Security-Policy": "default-src 'none'; sandbox"}
     if ext in conv.INLINE_IMAGES:
         return FileResponse(p, media_type=conv.INLINE_IMAGES[ext], headers=h)
-    name = p.name.split("-", 1)[-1]
+    name = p.name
+    if prefixed and re.match(r"^[0-9a-f]{8}-.", name):
+        name = name.split("-", 1)[1]
     return FileResponse(p, media_type="application/octet-stream", filename=name, headers=h)
 
 

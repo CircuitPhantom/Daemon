@@ -416,7 +416,7 @@ class Client:
 
     def chat(self, model=None, messages=None, tools=None, think=None, stream=False, **_ignored):
         if not configured():
-            raise RuntimeError("the model is not set up: fill llm.base_url, llm.api_key and llm.model in config.yaml")
+            raise RuntimeError("the model is not set up: DAEMON_LLM_API_KEY in .env, llm.base_url and llm.model in config.yaml")
         msgs = messages
         if any(isinstance(m, dict) and m.get("images") for m in msgs or []) and not _sees_images():
             msgs = without_images(msgs)
@@ -434,7 +434,7 @@ def test():
     """One tiny request. Returns {ok, info}."""
     c = _cfg()
     if not configured():
-        return {"ok": False, "info": "set llm.base_url, llm.api_key and llm.model in config.yaml"}
+        return {"ok": False, "info": "set DAEMON_LLM_API_KEY in .env, llm.base_url and llm.model in config.yaml"}
     t0 = time.time()
     try:
         r = CLOUD.chat(None, [{"role": "user", "content": "Reply with the single word: OK"}])

@@ -3023,7 +3023,7 @@ function renderPrefs() {
   $('up-dir').textContent = 'Saved in ' + u.dir;
   $('chk-fx').checked = e.audio_tags; $('sel-fx-use').value = e.audio_tags_use;
   $('sel-fx-use').disabled = !e.effects_active && !e.audio_tags;
-  $('fx-sub').textContent = !e.configured ? 'ElevenLabs is not set up (elevenlabs.api_key in config.yaml)'
+  $('fx-sub').textContent = !e.configured ? 'ElevenLabs is not set up (DAEMON_ELEVENLABS_API_KEY in .env)'
     : e.effects_active ? 'Active: the voice acts out [laughing], [sighs]… (model ' + e.model + ')'
     : e.model.includes('v3') ? 'Effects work with this model; waiting for ElevenLabs to be the first voice'
     : 'Turn on to try them. Works best with eleven_v3 (now: ' + e.model + ')';
@@ -3348,7 +3348,7 @@ function renderTasks() {
   const warn = $('tasks-warn');
   if (!T.messages) {
     warn.hidden = false;
-    warn.textContent = 'Signal is not set up yet. Set signal.enabled, signal.account and signal.allowed in config.yaml to receive messages.';
+    warn.textContent = 'Signal is not set up yet. Set signal.enabled in config.yaml and DAEMON_SIGNAL_ACCOUNT / DAEMON_SIGNAL_ALLOWED in .env to receive messages.';
   } else if (!T.link) {
     warn.hidden = false;
     warn.textContent = 'notify.base_url is empty in config.yaml, so messages will not include the call link.';
@@ -3650,7 +3650,7 @@ function ttsRender() {
   const nf = n => Number(n).toLocaleString('en-US');
   let msg;
   if (!t.enabled) msg = 'ElevenLabs is off (elevenlabs.enabled in config.yaml). Using the local voice.';
-  else if (!t.configured) msg = 'ElevenLabs needs elevenlabs.api_key in config.yaml. Using the local voice.';
+  else if (!t.configured) msg = 'ElevenLabs needs DAEMON_ELEVENLABS_API_KEY in .env. Using the local voice.';
   else if (t.local_only) msg = 'Using the local voice (Kokoro). Turn this off to use ElevenLabs.';
   else if (t.active) {
     msg = 'Using ElevenLabs (' + t.model + ')';

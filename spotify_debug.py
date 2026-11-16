@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Finds out why Spotify does not start a song on a device. Run it on the server, next to server.py:
 
-  venv/bin/python spotify_debug.py "Mi A3"
+  .\\venv\\Scripts\\python.exe spotify_debug.py "Mi A3"
 
 Open Spotify on that device first. It tries every way of starting a well-known song (play, album + offset, queue + skip),
 shows Spotify's answer and what the device is really doing after each, and stops at the first one that works.

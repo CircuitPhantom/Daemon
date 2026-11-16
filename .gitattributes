@@ -1,6 +1,7 @@
-# Windows checkout: scripts keep CRLF, test fixtures keep LF.
+# Windows checkout: scripts keep CRLF, text test fixtures keep LF, binary fixtures (sigdata) are never converted.
 * text=auto
-tests/** text eol=lf
+tests/** text=auto eol=lf
+tests/sigdata/** -text
 *.ps1 text eol=crlf
 *.bat text eol=crlf
 *.png binary

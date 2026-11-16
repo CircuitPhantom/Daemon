@@ -21,7 +21,7 @@ Run `python serve.py` in a window to see the output live. If PowerShell refuses 
 | "Permission needed" buttons never appear on Signal | Answer with `yes` / `no`; with no answer in `security.confirm_seconds` (90) the tool is not run |
 | Settings I changed are gone | The file is rewritten when a setting changes in the dashboard, comments are lost. Keep your notes elsewhere |
 | Locked out by the PIN | Set `auth.enabled: false` in `config.yaml`, or run `python set_pin.py` |
-| `.env` values are ignored | Needs `NAME=value` lines (no spaces around `=`) in the file next to `config.yaml`. In `config.yaml` leave the field empty or write `${NAME}` |
+| `.env` values are ignored | Needs `NAME=value` lines in the file next to `config.yaml` (or the file `DAEMON_ENV` points to). In `config.yaml` leave the field empty or write `${NAME}` / `${NAME:-}`; check the spelling with `doctor.py` |
 | No sound | Check the default playback device in Windows; replies are played with the Windows sound API |
 | Microphone not found | `python -m sounddevice` lists devices; set `wake.input_device` (or the agent's `--device`); allow desktop apps in Settings > Privacy > Microphone |
 | Wake word never fires | See [Voice](voice.md): engine, aliases, microphone |

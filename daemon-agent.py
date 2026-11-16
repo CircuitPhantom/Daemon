@@ -11,7 +11,8 @@ What it does
 Needs on the laptop:  pip install numpy sounddevice websockets faster-whisper   (+ portaudio, playerctl, wl-clipboard or xclip)
                       Windows: pip install -r requirements-agent.txt, then .\\setup-agent.ps1 (see docs/windows.md)
                       pip install openwakeword                    (only if the server uses wake.engine: openwakeword)
-Files next to it:     tools.py, wakeword.py and screeninput.py (copy them from the Daemon folder)
+Files next to it:     tools.py, wakeword.py, screeninput.py, platform_support.py, platform_windows.py, win_desktop.py and win_input.py
+                      (copy them from the Daemon folder, or run the agent from the Daemon folder itself)
 
   python daemon-agent.py --server http://SERVER:8000 --token TOKEN
   python daemon-agent.py --no-wake        only the desktop commands (no microphone)
@@ -21,7 +22,7 @@ Files next to it:     tools.py, wakeword.py and screeninput.py (copy them from t
   python daemon-agent.py --allow screen_input      let the model use the mouse and keyboard here (the `computer` tool; off by default)
   python daemon-agent.py --test-input              check the mouse/keyboard tools of this desktop (moves the pointer to the screen's middle)
   python daemon-agent.py --probe                   Windows: check media, volume, clipboard, screenshot and apps (changes nothing)
-  touch ~/.daemon-stop                             emergency brake: while this file exists the mouse and keyboard are refused
+  New-Item $HOME\\.daemon-stop                    emergency brake: while this file exists the mouse and keyboard are refused
 
 Settings can also be saved in ~/.config/daemon-agent.json (Windows: %APPDATA%\\daemon-agent\\config.json): {"server": "...", "token": "...", "device": "", "allow": [],
 "stt_model": "small", "stt_device": "cpu", "stt_compute": "int8"}
