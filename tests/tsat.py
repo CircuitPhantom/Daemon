@@ -9,7 +9,7 @@ import model_config as mc
 r=subprocess.run([sys.executable,"satellite_setup.py"],capture_output=True,text=True); ok("--token" in r.stdout, r.stdout+r.stderr)
 tok=mc.satellite["token"] if mc.satellite["token"] else None
 mc.load(); tok=mc.satellite["token"]; ok(len(tok)>=32 and mc.satellite["enabled"], "setup wrote token")
-ok(oct(os.stat("cfg18.yaml").st_mode)[-3:]=="600")
+ok(sys.platform=="win32" or oct(os.stat("cfg18.yaml").st_mode)[-3:]=="600", "config file mode")  # Windows has no mode bits
 import server, tools, satellite, auth, uvicorn, ollama
 # offline first
 r=tools.available_functions["media_control"](action="status"); ok("offline" in r, r)

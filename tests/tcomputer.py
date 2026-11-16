@@ -10,6 +10,7 @@ shutil.rmtree(D, ignore_errors=True); os.makedirs(D)
 def ok(c,m=""):
     if not c: print("FAIL",m); sys.exit(1)
 import model_config as mc; ok(mc.load())
+import platform_support as _ps; _ps.IS_WINDOWS=False      # this file tests the dormant Linux backends (xdotool/ydotool); the Windows ones are in twininput
 import screeninput as si, tools, toolguard, agent, ollama
 si_calls=[]
 def runner(argv, timeout=6):
