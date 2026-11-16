@@ -9,7 +9,10 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 
 **Website:** https://circuitphantom.github.io/Daemon/
 
-> Status: personal project, shared as is. Linux only (developed on Arch + Hyprland, the server on Debian).
+> Status: personal project, shared as is. This branch (`main`) is the **Linux** version, developed on Arch + Hyprland with the server on Debian.
+
+> **Using Windows?** Daemon has a Windows 10/11 port with PowerShell setup scripts and Windows computer control. It lives in the [`windows` branch](https://github.com/CircuitPhantom/Daemon/tree/windows), so clone that one instead:
+> `git clone -b windows https://github.com/CircuitPhantom/Daemon.git`
 
 ## Features
 - **Voice and text chat** from the web dashboard, an installable phone app (PWA with Share-menu support) and Signal
@@ -29,7 +32,7 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 One computer is enough. The laptop agent is only needed when the server runs somewhere else.
 
 ## Requirements
-Linux, Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
+Linux (Windows: see the [`windows` branch](https://github.com/CircuitPhantom/Daemon/tree/windows)), Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
 speech models (CPU only, no GPU needed). Microphone, phone, Signal, Twilio and Spotify are all optional.
 
 ## Quick start

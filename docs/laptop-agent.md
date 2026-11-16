@@ -55,7 +55,7 @@ Without an entry in `satellite.tools`, `execute_command` runs on the **server**.
 ## Computer control: what to know before you turn it on
 Details are in [FEATURES.md](../FEATURES.md#3-computer-control-computer-tool---two-switches-both-off-by-default). In short:
 - Needs a vision-capable model. It sees a screenshot of the focused monitor with a coordinate grid.
-- Linux only: Wayland (Hyprland tested) uses `ydotool` and `wtype`, X11 uses `xdotool`. Install them (`sudo pacman -S ydotool wtype xdotool`) and make sure your user can use `/dev/uinput` (ydotool wiki).
+- On Linux: Wayland (Hyprland tested) uses `ydotool` and `wtype`, X11 uses `xdotool`. Install them (`sudo pacman -S ydotool wtype xdotool`) and make sure your user can use `/dev/uinput` (ydotool wiki).
 - Test before trusting it: `venv/bin/python daemon-agent.py --test-input` takes a screenshot and moves the pointer to the middle of the screen.
 - The first action of each turn asks for your approval; at most `computer.max_actions` actions per turn; some key combos are blocked; typing into password prompts is refused.
 - Emergency brake: `touch ~/.daemon-stop` on the laptop. Delete the file to allow input again.

@@ -1,9 +1,9 @@
 # Getting started
 
-This gets Daemon running on one Linux computer, with the dashboard in your browser. Everything else (phone, Signal, laptop agent...) is optional and can be added later.
+This gets Daemon running on one Linux computer (on Windows, use the [`windows` branch](https://github.com/CircuitPhantom/Daemon/tree/windows) and its [Windows guide](https://github.com/CircuitPhantom/Daemon/tree/windows/docs/windows.md)), with the dashboard in your browser. Everything else (phone, Signal, laptop agent...) is optional and can be added later.
 
 ## What you need
-- **Linux** with a desktop session (developed on Arch + Hyprland; Debian/Ubuntu work too). The server part also runs headless.
+- **Linux** (this branch; Windows has its own branch, see above) with a desktop session (developed on Arch + Hyprland; Debian/Ubuntu work too). The server part also runs headless.
 - **Python 3.10+**. `setup.sh` creates a virtual environment, so nothing is installed system-wide.
 - **A cloud LLM account** and its API key. Daemon has no built-in model. Any provider that speaks the OpenAI chat format and supports tool calling works, see [LLM providers](llm-providers.md).
 - About **2 GB of disk and 2-4 GB of RAM** for the speech models (faster-whisper `small` on the CPU, Kokoro voice). A GPU is not needed. They download on first use.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daemon: a self-hosted assistant that talks, calls and does things</title>
-<meta name="description" content="Daemon is an open-source, self-hosted voice and chat assistant for Linux. Talk to it in your browser, on your phone, on Signal or on a phone call. It runs on your own server and uses tools on your computers.">
+<meta name="description" content="Daemon is an open-source, self-hosted voice and chat assistant for Linux and Windows. Talk to it in your browser, on your phone, on Signal or on a phone call. It runs on your own server and uses tools on your computers.">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#000000">
 <link rel="canonical" href="https://circuitphantom.github.io/Daemon/">
@@ -68,7 +68,7 @@
     <ul class="badges" aria-label="Project facts">
       <li>MIT license</li>
       <li><a href="https://github.com/CircuitPhantom/Daemon/actions/workflows/tests.yml">Tests run on GitHub Actions</a></li>
-      <li>Linux only</li>
+      <li>Linux (<a href="https://github.com/CircuitPhantom/Daemon/tree/windows">Windows branch</a>)</li>
     </ul>
 
     <div class="say" id="say">
@@ -292,7 +292,7 @@
   <div class="wrap qs">
     <div class="head reveal">
       <h2>Quick start</h2>
-      <p>You need Linux, Python 3.10 or newer, and an API key from an LLM provider that supports tool calling. The speech models take about 2 GB of disk and 2 to 4 GB of RAM. No GPU needed.</p>
+      <p>You need Linux (or Windows 10/11 via the <a href="https://github.com/CircuitPhantom/Daemon/tree/windows">windows branch</a>), Python 3.10 or newer, and an API key from an LLM provider that supports tool calling. The speech models take about 2 GB of disk and 2 to 4 GB of RAM. No GPU needed.</p>
     </div>
 
     <div class="term reveal">
@@ -341,7 +341,7 @@
     </div>
     <ul class="limits">
       <li class="reveal"><strong>The language model is a cloud API.</strong> <span>Your prompts and tool results go to the provider you choose. Local LLMs are untested.</span></li>
-      <li class="reveal"><strong>Linux only.</strong> <span>Developed on Arch with Hyprland, with the server on Debian. Other setups are untested.</span></li>
+      <li class="reveal"><strong>Linux first, Windows in a separate branch.</strong> <span>This page and the <code>main</code> branch describe the Linux version (developed on Arch with Hyprland, server on Debian). A Windows 10/11 port is in the <a href="https://github.com/CircuitPhantom/Daemon/tree/windows">windows branch</a>. macOS is untested.</span></li>
       <li class="reveal"><strong>No Docker image yet.</strong> <span>It is a native install with <code>./setup.sh</code>.</span></li>
       <li class="reveal"><strong>Early release.</strong> <span>The author uses it every day. Expect rough edges.</span></li>
       <li class="reveal"><strong>Phone calls cost money.</strong> <span>They need a paid Twilio number.</span></li>
@@ -361,6 +361,7 @@
     </div>
     <ul>
       <li><a href="https://github.com/CircuitPhantom/Daemon">GitHub repository</a></li>
+      <li><a href="https://github.com/CircuitPhantom/Daemon/tree/windows">Windows version (windows branch)</a></li>
       <li><a href="https://github.com/CircuitPhantom/Daemon/blob/main/LICENSE">MIT license</a></li>
       <li><a href="https://github.com/CircuitPhantom">CircuitPhantom on GitHub</a></li>
       <li><a href="https://x.com/circuitphantom0">@circuitphantom0 on X</a></li>
