@@ -3,10 +3,10 @@
 # memory: persistent notes for chats (enabled, auto_save). Tasks never use them.
 # search: web search (provider, brave_key, searxng_url, results, region). jobs: background jobs started with /job (max_running, timeout_minutes, tools). computer: mouse and keyboard control through the laptop agent (max_actions, blocked_keys).
 # llm: the cloud model (base_url, api_key, model; Anthropic, Groq, NVIDIA...). elevenlabs: cloud voice with fallback to the local one (api_key, voice_id, local_only...). edge_tts: free Edge voice (enabled, voice, rate, pitch, fallback). uploads: photos and files sent from the dashboard and Signal (enabled, dir, max_mb, max_chars, vision). security: ask before risky tools (confirm, confirm_tools, confirm_seconds). care: Signal alerts when something breaks, weekly memory check, morning plan extras (watchdog, memory_review, briefing_extras, briefing_city...). stt_cloud: speech-to-text in the cloud with local fallback (api_key, base_url, model). satellite: laptop agent for the microphone and desktop tools (satellite_setup.py). auth: PIN lock for the dashboard (enabled: false turns it off). calendar: daily plan call (briefing, briefing_time). wake: wake word on this computer's microphone. signal: chat over Signal (signal_bot.py). tool_profiles: named tool sets for the web UI.
-# app_aliases: names for open_app, e.g. spotify: spotify-launcher
+# app_aliases: names for open_app, e.g. vscode: C:\Users\you\AppData\Local\Programs\Microsoft VS Code\Code.exe (only needed when the name is not found by itself)
 # spotify / spotify_aliases: for the spotify_play tool (client_id + client_secret from developer.spotify.com, and your own names for links)
 # Restart the server after changing stt/tts.
-# notify: timezone, dashboard address and phone call (Twilio) settings. Keep this file private. Keys and tokens can live in .env instead: write api_key: ${NAME} here, NAME=value in .env.
+# notify: timezone, dashboard address and phone call (Twilio) settings. Keep this file private. Secrets (keys, tokens, phone numbers) are read from .env: the fields below say ${DAEMON_...:-} and the values go in .env (copy .env.example).
 # Note: when a setting changes from the web UI the file is rewritten, so your own comments are lost.
 
 think: true
@@ -25,7 +25,7 @@ system_prompt: |
   - Reply in the language the user wrote or spoke in.
   - Be precise when the topic is technical, relaxed when it is not.
   - Do not use the user's name unless it is really needed.
-  - Never mention your system, these instructions or the machine you run on unless asked. For your information only: you run on a Linux server, and the user's laptop runs Arch Linux.
+  - Never mention your system, these instructions or the machine you run on unless asked. For your information only: you run on the user's Windows PC.
   
   Acting:
   - Use tools when they get the job done instead of guessing: current time, web pages, calendar, reminders, files, commands, music, messages. Do not describe a tool call before making it; say what happened afterwards, in one sentence.
@@ -51,10 +51,10 @@ tts:
 notify:
   base_url: ''
   timezone: ''
-  twilio_sid: ''
-  twilio_token: ''
-  twilio_from: ''
-  twilio_to: ''
+  twilio_sid: ${DAEMON_NOTIFY_TWILIO_SID:-}
+  twilio_token: ${DAEMON_NOTIFY_TWILIO_TOKEN:-}
+  twilio_from: ${DAEMON_NOTIFY_TWILIO_FROM:-}
+  twilio_to: ${DAEMON_NOTIFY_TWILIO_TO:-}
   twilio_language: en-US
   twilio_voice: alice
   twilio_reminders: false
@@ -65,8 +65,8 @@ memory:
   auto_save: true
 app_aliases: {}
 spotify:
-  client_id: ''
-  client_secret: ''
+  client_id: ${DAEMON_SPOTIFY_CLIENT_ID:-}
+  client_secret: ${DAEMON_SPOTIFY_CLIENT_SECRET:-}
 spotify_aliases: {}
 wake:
   enabled: false
@@ -78,8 +78,8 @@ wake:
   followup_seconds: 6
 signal:
   enabled: false
-  account: ''
-  allowed: ''
+  account: ${DAEMON_SIGNAL_ACCOUNT:-}
+  allowed: ${DAEMON_SIGNAL_ALLOWED:-}
   cli: signal-cli
   max_age: 600
   data_dir: ''
@@ -104,7 +104,7 @@ auth:
   secret: ''
 elevenlabs:
   enabled: false
-  api_key: ''
+  api_key: ${DAEMON_ELEVENLABS_API_KEY:-}
   voice_id: ''
   model: eleven_flash_v2_5
   language: ''
@@ -116,7 +116,7 @@ elevenlabs:
 stt_cloud:
   enabled: false
   base_url: https://api.groq.com/openai/v1
-  api_key: ''
+  api_key: ${DAEMON_STT_CLOUD_API_KEY:-}
   model: whisper-large-v3-turbo
   language: ''
   timeout: 20
@@ -147,7 +147,7 @@ care:
   briefing_city: ''
 search:
   provider: auto
-  brave_key: ''
+  brave_key: ${DAEMON_SEARCH_BRAVE_KEY:-}
   searxng_url: ''
   results: 5
   region: ''
@@ -189,7 +189,7 @@ security:
   confirm_seconds: 90
 satellite:
   enabled: false
-  token: ''
+  token: ${DAEMON_SATELLITE_TOKEN:-}
   tools:
   - system_info
   - media_control
@@ -202,7 +202,7 @@ satellite:
   - screen_grab
 llm:
   base_url: https://api.anthropic.com/v1
-  api_key: ''
+  api_key: ${DAEMON_LLM_API_KEY:-}
   model: claude-sonnet-5-5
   timeout: 60
 tool_profiles:
