@@ -117,6 +117,7 @@ open(os.path.join(d, FOO), "w").close(); os.chmod(os.path.join(d, FOO), 0o755)
 T.hooks["app_aliases"] = lambda: {"browser": "foo", "tr": "foo"}
 r = T.open_app("foo"); ok(r=="Started foo" and launched[-1][0]=="exe", (r, launched))
 ok(T.open_app("browser").lower()=="started browser (as %s)" % FOO, T.open_app("browser"))      # which() may return foo.EXE
+import shutil; _which = shutil.which; shutil.which = lambda n, *a, **k: _which(n, *a, **k) if n == "foo" else None      # the real PATH of this PC (code.cmd, ...) must not matter
 ok(T.open_app("code")=="Started code (as Visual Studio Code.lnk)" and launched[-1][0]=="file", (T.open_app("code"), launched))
 ok(T.open_app("notepad++")=="Started notepad++", "exact name, any case")
 r = T.open_app("calculator"); ok(r=="Started calculator" and launched[-1]==("uwp","Microsoft.WindowsCalculator_8wekyb3d8bbwe!App"), (r, launched))
