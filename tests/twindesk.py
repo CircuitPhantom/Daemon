@@ -119,6 +119,13 @@ r = T.open_app("foo"); ok(r=="Started foo" and launched[-1][0]=="exe", (r, launc
 ok(T.open_app("browser").lower()=="started browser (as %s)" % FOO, T.open_app("browser"))      # which() may return foo.EXE
 import shutil; _which = shutil.which; shutil.which = lambda n, *a, **k: _which(n, *a, **k) if n == "foo" else None      # the real PATH of this PC (code.cmd, ...) must not matter
 ok(T.open_app("code")=="Started code (as Visual Studio Code.lnk)" and launched[-1][0]=="file", (T.open_app("code"), launched))
+T.hooks["app_aliases"] = lambda: {"spotify": "spotify-launcher", "browser": "foo", "tr": "foo"}      # an alias copied from another computer
+r = T.open_app("spotify"); ok(r=="Started spotify" and launched[-1]==("file", [e["path"] for e in W.start_menu_entries() if e["name"]=="Spotify"][0]), (r, launched[-1]))
+ok(T.open_app("visual studio")=="Started visual studio (as Visual Studio Code.lnk)", "word part of a name")
+ok(T.open_app("VisualStudioCode")=="Started VisualStudioCode (as Visual Studio Code.lnk)", "spaces ignored")
+_w = shutil.which; shutil.which = lambda n, *a, **k: "C:/x/code.cmd" if n == "code" else _w(n, *a, **k)
+ok(T.open_app("VS Code")=="Started VS Code (as code.cmd)" and launched[-1]==("file","C:/x/code.cmd"), ("synonym", launched[-1]))
+shutil.which = _w
 ok(T.open_app("notepad++")=="Started notepad++", "exact name, any case")
 r = T.open_app("calculator"); ok(r=="Started calculator" and launched[-1]==("uwp","Microsoft.WindowsCalculator_8wekyb3d8bbwe!App"), (r, launched))
 r = T.open_app("S"); ok(r.startswith("Error: S was not found.") and "Similar: " in r and "Steam" in r and "app_aliases" in r, r)    # ambiguous substring: candidates, nothing started

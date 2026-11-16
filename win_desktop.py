@@ -395,33 +395,47 @@ def app_paths(n):
     return ""
 
 
+SYNONYMS = {"vscode": "code", "vs code": "code", "visual studio code": "code", "edge": "msedge", "microsoft edge": "msedge",
+            "word": "winword", "powerpoint": "powerpnt", "terminal": "wt", "windows terminal": "wt", "file explorer": "explorer",
+            "files": "explorer", "task manager": "taskmgr", "paint": "mspaint", "calculator": "calc"}
+
+
+def _norm(t):
+    return re.sub(r"[^\w+]", "", t.lower())
+
+
 def _pick(entries, q, key):
-    exact = [e for e in entries if e[key].lower() == q]
+    nq = _norm(q)
+    exact = [e for e in entries if e[key].lower() == q or _norm(e[key]) == nq]
     if exact:
         return exact[0], [e[key] for e in exact]
-    near = [e for e in entries if q in e[key].lower()]
+    near = [e for e in entries if q in e[key].lower() or (nq and nq in _norm(e[key]))]
     return (near[0] if len(near) == 1 else None), [e[key] for e in near]
 
 
 def resolve_app(n, aliases=None):
     """(target, how) or (None, similar names). target = (kind, value), kind: exe | file | uwp.
-    Order: your aliases, program on PATH, App Paths registry, Start Menu shortcut, Store app."""
+    Order: your aliases (only when they point at something that exists here), program on PATH, registered program,
+    Start Menu shortcut, Store app. Common names (vscode, edge, word ...) also try the real program name."""
     q = n.lower()
     al = aliases or {}
     if q in al:
         a = al[q].strip().strip('"')
-        w = shutil.which(a)
+        w = shutil.which(a.split()[0] if a.split() and not os.path.exists(a) else a)
         if w:
             return _exe_target(w), "alias"
         if os.path.exists(a):
             return ("file", a), "alias"
-        return ("exe", a.split()[0] if a.split() else a), "alias"
-    w = shutil.which(n)
-    if w:
-        return _exe_target(w), "program"
-    p = app_paths(n)
-    if p:
-        return _exe_target(p), "program " + os.path.basename(p)
+        # an alias written for another computer (spotify-launcher ...) is skipped: look the name up normally
+    for name in (n, SYNONYMS.get(q)):
+        if not name:
+            continue
+        w = shutil.which(name)
+        if w:
+            return _exe_target(w), "program"
+        p = app_paths(name)
+        if p:
+            return _exe_target(p), "program " + os.path.basename(p)
     menu = start_menu_entries()
     hit, names = _pick(menu, q, "name")
     if hit:
