@@ -9,7 +9,7 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 
 **Website:** https://circuitphantom.github.io/Daemon/
 
-> Status: personal project, shared as is. Linux only (developed on Arch + Hyprland, the server on Debian).
+> Status: personal project, shared as is. This fork is set up for **Windows 10/11** first; Linux (Arch + Hyprland, Debian server) is fully supported too and every change keeps the Linux behaviour and its tests.
 
 ## Features
 - **Voice and text chat** from the web dashboard, an installable phone app (PWA with Share-menu support) and Signal
@@ -29,11 +29,21 @@ manage a calendar and reminders, play Spotify, call you on the phone, and (opt-i
 One computer is enough. The laptop agent is only needed when the server runs somewhere else.
 
 ## Requirements
-Windows 10/11 is supported natively (server, laptop tools, computer control): see [docs/windows.md](docs/windows.md) for what is tested and its limits.
-Linux, Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
+Windows 10/11 (PowerShell 5.1, already there) or Linux, Python 3.10+, an API key of an LLM provider that supports tool calling, and about 2 GB of disk and 2-4 GB of RAM for the
 speech models (CPU only, no GPU needed). Microphone, phone, Signal, Twilio and Spotify are all optional.
 
 ## Quick start
+**Windows** (normal PowerShell, not administrator; what is tested and its limits: [docs/windows.md](docs/windows.md)):
+```powershell
+git clone https://github.com/CircuitPhantom/Daemon.git
+cd Daemon
+.\setup.ps1                                 # winget programs, venv, Python packages, dashboard libraries
+Copy-Item config.example.yaml config.yaml ; Copy-Item .env.example .env
+notepad .env ; notepad config.yaml          # DAEMON_LLM_API_KEY in .env; llm.base_url and llm.model in config.yaml
+.\venv\Scripts\python.exe doctor.py        # what is missing?
+.\install-service.ps1                       # run in the background from log on (or: python serve.py)
+```
+**Linux:**
 ```bash
 git clone https://github.com/CircuitPhantom/Daemon.git
 cd Daemon

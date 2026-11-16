@@ -105,6 +105,8 @@ async def _a_status(s):
     except Exception:
         meta = ""
     app = re.sub(r"\.exe$", "", str(s.source_app_user_model_id or ""), flags=re.I).split("!")[-1].split(".")[-1]
+    if re.fullmatch(r"[0-9A-Fa-f]{10,}", app):             # a Chrome / Edge web app registers a hash, not a name
+        app = ""
     return _STATUS.get(int(pb.playback_status), "Stopped"), f"{meta} ({app})" if app else meta
 
 
