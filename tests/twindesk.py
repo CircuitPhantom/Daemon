@@ -112,10 +112,11 @@ W.app_paths = lambda n: ""
 launched = []
 W.launch = lambda t: launched.append(t)
 os.environ["PATH"] = d + os.pathsep + os.environ["PATH"]
-open(os.path.join(d, "foo"), "w").close(); os.chmod(os.path.join(d, "foo"), 0o755)      # Windows finds foo.exe through PATHEXT
+FOO = "foo.exe" if os.name == "nt" else "foo"      # Windows only finds names with a PATHEXT extension
+open(os.path.join(d, FOO), "w").close(); os.chmod(os.path.join(d, FOO), 0o755)
 T.hooks["app_aliases"] = lambda: {"browser": "foo", "tr": "foo"}
 r = T.open_app("foo"); ok(r=="Started foo" and launched[-1][0]=="exe", (r, launched))
-ok(T.open_app("browser")=="Started browser (as foo)", T.open_app("browser"))
+ok(T.open_app("browser")=="Started browser (as %s)" % FOO, T.open_app("browser"))
 ok(T.open_app("code")=="Started code (as Visual Studio Code.lnk)" and launched[-1][0]=="file", (T.open_app("code"), launched))
 ok(T.open_app("notepad++")=="Started notepad++", "exact name, any case")
 r = T.open_app("calculator"); ok(r=="Started calculator" and launched[-1]==("uwp","Microsoft.WindowsCalculator_8wekyb3d8bbwe!App"), (r, launched))
