@@ -45,7 +45,7 @@ If PowerShell refuses to run scripts: `powershell -ExecutionPolicy Bypass -File 
 - **Tailscale:** `tailscale` works the same (`tailscale serve`, `tailscale funnel`); use an administrator PowerShell if it asks for it. Windows Firewall only asks when Daemon listens on a non-loopback address; the default is `127.0.0.1`.
 
 ### Manual test checklist (server)
-Run in PowerShell in the project folder; send me anything that does not match.
+Run in PowerShell in the project folder; open an issue if anything does not match.
 | # | Command | Expect |
 |---|---|---|
 | 1 | `python tests\run.py` | no `FAIL` (some tests print `skip`; that is on purpose) |
@@ -75,7 +75,7 @@ The agent is the small program that gives a Daemon on another computer (a home s
 Options: `-Device "mic name"` (names: `python -m sounddevice`), `-Allow execute_command,screen_input`, `-NoService` (start by hand), `-Print`, `-Remove`.
 The settings (with the token) are in `%APPDATA%\daemon-agent\config.json`, readable by your user only. The task runs `pythonw.exe daemon-agent.py` at log on and writes `logs\agent.log`. It is a task of your user, not a service, for the same reason as the server.
 
-**How each tool works here** :
+**How each tool works here:**
 | Tool | Windows implementation | Needs |
 |---|---|---|
 | `media_control` | Windows media session (what Spotify, browsers and players register); media keys when that is missing | `winrt-*` packages for `status`, real play / pause and `restart` |
@@ -89,11 +89,11 @@ The settings (with the token) are in `%APPDATA%\daemon-agent\config.json`, reada
 
 **Limits, honestly:**
 - Without the `winrt-*` packages `media_control` can only press media keys: `play` and `pause` both send "play/pause" (a toggle), and `status` / `restart` answer with an error that names the packages. `setup-agent.ps1` installs them; if pip cannot get one for your Python, `--probe` shows `media session` as FAIL.
-- Spotify decides what a `spotify:` link does; Windows' media session is used to press play afterwards. If it opens the song but does not play, tell me what `--probe` says for `media session`.
+- Spotify decides what a `spotify:` link does; Windows' media session is used to press play afterwards. If it opens the song but does not play, open an issue with what `--probe` says for `media session`.
 - A normal agent cannot touch windows of programs running **as administrator** (Task Manager, an elevated PowerShell): Windows blocks that (UIPI). Screenshots of them work, clicks and keys do not. Run the agent elevated only if you really need that; I do not recommend it.
 - A locked screen, the login screen and UAC prompts (secure desktop) cannot be captured or controlled by any user program.
 - Apps in Store form open by their Start Menu name (`Get-StartApps` is asked once every 5 minutes and takes a moment the first time).
-- 
+
 ### Manual test checklist (laptop agent)
 **One computer only (no separate server)?** Then you do not need the agent: the server on this PC runs the desktop tools itself. `setup.ps1` installs the same packages; use checklist items 1, 2, 5-12, and 13 through Settings > Wake word (the server listens to this PC's microphone). Items 3, 4, 14, 15 are for the agent.
 
@@ -101,7 +101,7 @@ On the Windows PC, in the project folder. The server must already have `satellit
 | # | Do | Expect |
 |---|---|---|
 | 1 | `python tests\run.py twindesk` | `ok twindesk` |
-| 2 | `.\agent-venv\Scripts\python.exe daemon-agent.py --probe` | all ten lines `OK` (`Store apps` and `Spotify` may be FAIL if you have none); send me every FAIL line |
+| 2 | `.\agent-venv\Scripts\python.exe daemon-agent.py --probe` | all ten lines `OK` (`Store apps` and `Spotify` may be FAIL if you have none); open an issue with every FAIL line |
 | 3 | `.\setup-agent.ps1 -Server ... -Token ...` | "server answered, token accepted", task installed, last log lines say `connected to` |
 | 4 | Dashboard > Settings > Voice > Wake word | "Laptop agent connected" |
 | 5 | Chat: "pause the music" while Spotify or a YouTube video plays | it pauses; "play" resumes; "next song" skips |
@@ -160,6 +160,6 @@ Open Notepad first and keep it small, so nothing important is under the pointer.
 
 ## Troubleshooting
 - **`ffmpeg not found`:** `winget install Gyan.FFmpeg`, then open a new PowerShell (PATH is read at start).
-- **`pykokoro` speaks nothing / mentions espeak:** run `.\setup.ps1 -Models` and send me the error.
+- **`pykokoro` speaks nothing / mentions espeak:** run `.\setup.ps1 -Models` and open an issue with the error.
 - **Letters like `Ã§` or `?` in the console:** use Windows Terminal or `chcp 65001`; the files themselves are always UTF-8.
 - **The task is `Ready` but the dashboard does not answer:** read `logs\daemon.log`; run `python serve.py` in a window to see the error.

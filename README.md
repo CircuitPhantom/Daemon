@@ -1,6 +1,6 @@
 # Daemon
 
-[![tests](https://github.com/CircuitPhantom/Daemon/actions/workflows/tests.yml/badge.svg)](https://github.com/CircuitPhantom/Daemon/actions/workflows/tests.yml)
+[![tests](https://github.com/CircuitPhantom/Daemon/actions/workflows/tests.yml/badge.svg?branch=windows)](https://github.com/CircuitPhantom/Daemon/actions/workflows/tests.yml?query=branch%3Awindows)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **A self-hosted voice and chat assistant that can actually do things.** Talk or type to it from a browser, your phone or Signal;
@@ -8,6 +8,8 @@ it answers with a cloud language model of your choice and uses tools on your beh
 manage a calendar and reminders, play Spotify, call you on the phone, and (opt-in) use your desktop with mouse and keyboard.
 
 **Website:** https://circuitphantom.github.io/Daemon/
+
+> Looking for Linux? Use the [`main` branch](https://github.com/CircuitPhantom/Daemon). This is the Windows branch.
 
 > Status: personal project, shared as is. This fork is **Windows 10/11 only** (tested on Windows 11, PowerShell 5.1, Python 3.13): see [docs/windows.md](docs/windows.md) for what is tested and its limits. Some Linux code paths are still in the source but are neither tested nor documented here.
 
@@ -35,7 +37,7 @@ speech models (CPU only, no GPU needed). Microphone, phone, Signal, Twilio and S
 ## Quick start
 In a normal (not administrator) PowerShell:
 ```powershell
-git clone https://github.com/CircuitPhantom/Daemon.git
+git clone -b windows https://github.com/CircuitPhantom/Daemon.git
 cd Daemon
 .\setup.ps1                                 # winget programs, venv, Python packages, dashboard libraries
 Copy-Item config.example.yaml config.yaml ; Copy-Item .env.example .env

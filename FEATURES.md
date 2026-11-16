@@ -59,10 +59,10 @@ jobs:
 1. Server: enable the `computer` tool (Settings > Tools, or the Full profile). The model needs vision.
 2. This PC: with a laptop agent, `.\setup-agent.ps1 -Allow screen_input`; one computer and no agent: `DAEMON_ALLOW_INPUT=1` in `.env` (restart the task).
 
-Nothing to install on Windows (SendInput); see [docs/windows.md](docs/windows.md#tier-3-windows-computer-control) for how it works and its limits (administrator windows, UAC prompts, the lock screen).
+Nothing to install on Windows (SendInput); see [docs/windows.md](docs/windows.md#computer-control) for how it works and its limits (administrator windows, UAC prompts, the lock screen).
 
 **Check it first:** `python daemon-agent.py --test-input` shows what was found, takes a screenshot and moves the pointer to the middle of
-the screen; it compares the real pointer position with the expected one. If it says OFF BY n px, send me the output.
+the screen; it compares the real pointer position with the expected one. If it says OFF BY n px, please open an issue and paste the output.
 
 Safety:
 - the first action of a turn asks for your OK (dashboard buttons or `yes`/`no` on Signal); that OK covers the rest of that turn only

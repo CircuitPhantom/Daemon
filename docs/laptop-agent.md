@@ -43,7 +43,7 @@ Both sides must agree. The server's `satellite.tools` decides what is sent to th
 Restart the task after changing `-Allow`: `Stop-ScheduledTask -TaskName "Daemon Agent"; Start-ScheduledTask -TaskName "Daemon Agent"`.
 
 ## Computer control: what to know before you turn it on
-Details are in [FEATURES.md](../FEATURES.md#3-computer-control-computer-tool---two-switches-both-off-by-default) and [Windows computer control](windows.md#tier-3-windows-computer-control). In short:
+Details are in [FEATURES.md](../FEATURES.md#3-computer-control-computer-tool---two-switches-both-off-by-default) and [Windows computer control](windows.md#computer-control). In short:
 - Needs a vision-capable model. It sees a screenshot of the screen with the window in front, with a coordinate grid.
 - Nothing to install (SendInput). Windows of programs running as administrator, UAC prompts and the lock screen cannot be controlled.
 - Test before trusting it: `python daemon-agent.py --test-input` takes a screenshot and moves the pointer to the middle of the screen.

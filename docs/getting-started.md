@@ -11,7 +11,7 @@ This gets Daemon running on one Windows 10/11 computer, with the dashboard in yo
 
 ## 1. Install
 ```powershell
-git clone https://github.com/CircuitPhantom/Daemon.git
+git clone -b windows https://github.com/CircuitPhantom/Daemon.git
 cd Daemon
 .\setup.ps1
 ```
@@ -72,7 +72,7 @@ Open <http://127.0.0.1:8000>. The first start downloads the speech models, which
 ## Next steps
 - Use it from your phone and anywhere: [Remote access and the phone app](remote-access.md)
 - Talk to it away from the browser: [Voice and wake word](voice.md), [Signal](signal.md), [phone calls](phone-calls.md)
-- Let it use your desktop: [Laptop agent](laptop-agent.md) and [Windows computer control](windows.md#tier-3-windows-computer-control)
+- Let it use your desktop: [Laptop agent](laptop-agent.md) and [Windows computer control](windows.md#computer-control)
 - Music: [Spotify](spotify.md)
 - Recurring work: [Scheduled tasks](tasks.md)
 - Run it on another PC and use this one as the laptop: [MIGRATION.md](../MIGRATION.md)
