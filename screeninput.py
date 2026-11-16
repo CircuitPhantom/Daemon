@@ -9,6 +9,10 @@ It does not move anything by itself: it builds the commands of the programs that
   Hyprland / Sway, moving the pointer    hyprctl dispatch movecursor / swaymsg seat - cursor set  (exact positions)
                                          other Wayland desktops: ydotool mousemove --absolute
 
+Windows                                SendInput through win_input.py (pointer in real pixels, text as Unicode characters, so any keyboard
+                                       layout works; nothing to install). Windows of programs that run as administrator and the
+                                       lock screen / UAC prompts cannot be controlled (docs/windows.md)
+
 Arch:   sudo pacman -S ydotool wtype xdotool      (ydotool: systemctl --user enable --now ydotool; your user needs the
         `input` group, or the ydotoold socket: see the ydotool wiki page)
 Check:  python daemon-agent.py --test-input       shows what was found and moves the pointer to the middle of the screen
@@ -18,6 +22,7 @@ relates to the real screen). One screen is supported; with several screens use t
 """
 import json
 import os
+import platform_support
 import re
 import shutil
 import subprocess
@@ -55,7 +60,9 @@ ALIASES = {"pgup": "pageup", "page_up": "pageup", "pgdn": "pagedown", "page_down
            "\\": "backslash", "[": "bracketleft", "]": "bracketright", " ": "space"}
 # a window like these gets no typed text (a password prompt, a password manager, an authentication dialog)
 SENSITIVE_WINDOW = re.compile(r"password|passphrase|parola|şifre|sifre|bitwarden|keepass|1password|lastpass|proton pass|"
-                              r"authenticat|polkit|sudo|unlock|pinentry|gnome-keyring|kwallet", re.I)
+                              r"authenticat|polkit|sudo|unlock|pinentry|gnome-keyring|kwallet|"
+                              r"windows security|user account control|credential manager|windows hello|bitlocker|"
+                              r"kimlik bilgileri|windows güvenliği|kullanıcı hesabı denetimi", re.I)
 
 runner = None            # tests replace this: fn(argv, timeout) -> (ok, output)
 
@@ -126,6 +133,9 @@ def compositor():
 
 
 def detect():
+    if platform_support.IS_WINDOWS:
+        return {"session": "windows", "compositor": "windows", "found": {"sendinput": True}, "move": "sendinput", "click": "sendinput",
+                "type": "sendinput", "key": "sendinput", "scroll": "sendinput", "missing": [], "unicode": True}
     s, comp = session(), compositor()
     has = lambda n: bool(shutil.which(n)) if runner is None else True
     found = {n: has(n) for n in ("xdotool", "ydotool", "wtype", "hyprctl", "swaymsg")}
@@ -163,6 +173,8 @@ def describe(d=None):
 def cmd_move(d, x, y):
     x, y = int(round(x)), int(round(y))
     b = d["move"]
+    if b == "sendinput":
+        return [["win", "move", x, y]]
     if b == "xdotool":
         return [["xdotool", "mousemove", "--sync", x, y]]
     if b == "hyprctl":
@@ -177,6 +189,8 @@ def cmd_move(d, x, y):
 def cmd_click(d, button="left", count=1):
     button = button if button in BUTTONS else "left"
     b = d["click"]
+    if b == "sendinput":
+        return [["win", "click", button, count]]
     if b == "xdotool":
         c = ["xdotool", "click"] + (["--repeat", count, "--delay", 90] if count > 1 else []) + [BUTTONS[button]]
         return [c]
@@ -191,6 +205,8 @@ def cmd_click(d, button="left", count=1):
 
 def cmd_button(d, down, button="left"):
     b = d["click"]
+    if b == "sendinput":
+        return [["win", "button", bool(down), button]]
     if b == "xdotool":
         return [["xdotool", "mousedown" if down else "mouseup", BUTTONS[button]]]
     if b == "ydotool":
@@ -202,6 +218,8 @@ def cmd_button(d, down, button="left"):
 
 def cmd_type(d, text):
     b = d["type"]
+    if b == "sendinput":
+        return [["win", "type", text]]
     if b == "xdotool":
         return [["xdotool", "type", "--delay", 12, "--", text]]
     if b == "wtype":
@@ -234,6 +252,8 @@ def cmd_key(d, combo):
     mods, key = parse_combo(combo)
     xkey, code = KEYS[key]
     b = d["key"]
+    if b == "sendinput":
+        return [["win", "key", mods, key]]
     if b == "wtype" and d.get("found", {}).get("ydotool") and key not in PUNCT:
         b = "ydotool"            # a real (uinput) keyboard: the desktop and every app (Blender, XWayland) see its modifiers;
                                  # wtype's virtual keyboard loses them in some apps. Punctuation stays on wtype (layouts differ)
@@ -259,6 +279,8 @@ def cmd_scroll(d, amount):
     """amount > 0 scrolls down, < 0 up (in notches)."""
     n = abs(int(amount))
     b = d["scroll"]
+    if b == "sendinput":
+        return [["win", "scroll", int(amount)]]
     if b == "xdotool":
         return [["xdotool", "click", "--repeat", n, "--delay", 40, 5 if amount > 0 else 4]]
     if b == "ydotool":
@@ -266,8 +288,19 @@ def cmd_scroll(d, amount):
     raise InputError("no way to scroll: " + ", ".join(d["missing"]))
 
 
+def _win(c):
+    import win_input
+    try:
+        win_input.do(*c[1:])
+    except win_input.InputBlocked as e:
+        raise InputError(str(e))
+
+
 def execute(cmds):
     for c in cmds:
+        if c[0] == "win":
+            _win(c)
+            continue
         ok, out = run(c)
         if not ok:
             hint = ""
@@ -280,6 +313,8 @@ def execute(cmds):
 def logical_screen(d):
     """(x, y, width, height) of ALL screens together, in the units the pointer commands use (the screenshot covers all of them),
     or None when that is the same as the screenshot's real size (X11 and ydotool)."""
+    if d["move"] == "sendinput":
+        return _union([(m["x"], m["y"], m["w"], m["h"]) for m in monitors(d)])
     try:
         if d["move"] == "hyprctl":
             ok, out = run(["hyprctl", "-j", "monitors"])
@@ -303,6 +338,14 @@ def logical_screen(d):
 def monitors(d):
     """[{name, x, y, w, h, focused}] in pointer units (Hyprland, Sway), left to right; [] elsewhere."""
     out = []
+    if d["move"] == "sendinput":
+        import win_desktop
+        fp = win_desktop.foreground_point()
+        for m in win_desktop.monitors():
+            l, t, r, b = m["rect"]
+            out.append({"name": m["name"], "x": l, "y": t, "w": r - l, "h": b - t,
+                        "focused": bool(fp and l <= fp[0] < r and t <= fp[1] < b)})
+        return sorted(out, key=lambda m: (m["x"], m["y"]))
     try:
         if d["move"] == "hyprctl":
             ok, raw = run(["hyprctl", "-j", "monitors"])
@@ -375,6 +418,22 @@ def focused_box(d):
     return b[:4] if b else None
 
 
+WINDOWS_SHORTCUTS = """Windows key bindings (standard):
+alt+tab: switch window
+alt+f4: close the window in front
+super+d: show / hide the desktop
+super+e: File Explorer
+super+tab: task view (all windows and desktops)
+super+up / super+down: maximise / restore or minimise the window
+super+left / super+right: snap the window to a side
+super+shift+s: screenshot snipping tool
+super+v: clipboard history
+super+i: Settings
+super (alone): Start menu, then type a program name and enter
+ctrl+shift+esc: Task Manager
+ctrl+t / ctrl+w / ctrl+l / f5: new tab / close tab / address bar / reload in a browser
+ctrl+c / ctrl+v / ctrl+x / ctrl+z / ctrl+a / ctrl+f: copy, paste, cut, undo, select all, find
+Not possible: ctrl+alt+delete and super+l (the sign-in screen)."""
 HYPR_MODS = ((64, "SUPER"), (4, "CTRL"), (8, "ALT"), (1, "SHIFT"))
 NOTES_FILE = os.path.expanduser("~/.daemon-shortcuts.txt")
 
@@ -495,6 +554,8 @@ def shortcuts(d, limit=8500):
     """The desktop's keyboard shortcuts in a compact form, from Hyprland itself (hyprctl binds; with the Lua config also the
     config lines that say which program a key starts), plus the user's own notes in ~/.daemon-shortcuts.txt (any desktop)."""
     parts = []
+    if d.get("move") == "sendinput":
+        parts.append(WINDOWS_SHORTCUTS)
     if d.get("move") == "hyprctl" or d.get("found", {}).get("hyprctl"):
         binds = _hypr_binds()
         progs = _config_programs() if any(a is None for _c, _w, a, _d in binds) or not binds else {}
@@ -597,6 +658,9 @@ def to_screen(d, x, y, view, real, box=None):
 
 def pointer_position(d):
     """Where the pointer is now, if the desktop can tell: (x, y) or None."""
+    if d.get("move") == "sendinput":
+        import win_desktop
+        return win_desktop.cursor_pos()
     try:
         if d["compositor"] == "hyprland" and d["found"].get("hyprctl"):
             ok, out = run(["hyprctl", "cursorpos"])

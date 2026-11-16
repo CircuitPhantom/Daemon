@@ -1,6 +1,6 @@
 # Sets up the Daemon laptop agent on Windows (wake word + desktop commands for a Daemon that runs on another computer).
 # Run it in a normal (not administrator) PowerShell, inside a folder that has daemon-agent.py, tools.py, wakeword.py,
-# win_desktop.py and screeninput.py (the Daemon folder works).
+# win_desktop.py, win_input.py and screeninput.py (the Daemon folder works).
 #
 #   .\setup-agent.ps1 -Server https://NAME.tailnet.ts.net -Token TOKEN     install, save the settings, start the task
 #   .\setup-agent.ps1 -Remove                                              stop and remove the task
@@ -35,7 +35,7 @@ if ($Remove) {
     }
     exit 0
 }
-foreach ($f in 'daemon-agent.py', 'tools.py', 'wakeword.py', 'screeninput.py', 'win_desktop.py', 'platform_support.py') {
+foreach ($f in 'daemon-agent.py', 'tools.py', 'wakeword.py', 'screeninput.py', 'win_desktop.py', 'win_input.py', 'platform_support.py') {
     if (-not (Test-Path (Join-Path $Here $f))) { throw "$f is missing in $Here (copy it from the Daemon folder)" }
 }
 

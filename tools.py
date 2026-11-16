@@ -1888,6 +1888,17 @@ def screenshot(where: str = "", clipboard: bool = False) -> str:
 
 
 # ───────────────────────── mouse and keyboard (screeninput.py) ─────────────────────────
+INPUT_STOP_FILE = Path.home() / ".daemon-stop"             # emergency brake: while it exists, mouse and keyboard are refused (agent and server)
+
+
+def _input_blocked(d, point=None):
+    """Windows: why input cannot reach the window (a program running as administrator, ...), '' when it can."""
+    if d.get("move") != "sendinput":
+        return ""
+    import win_input
+    return win_input.blocked_reason(point)
+
+
 def screen_input(action: str, x: int = 0, y: int = 0, x2: int = 0, y2: int = 0, text: str = "", keys: str = "",
                  amount: int = 3, button: str = "left") -> str:
     """Moves the mouse, clicks, types or presses keys on THIS computer. The laptop agent runs it, and only when it was started with
@@ -1903,11 +1914,16 @@ def screen_input(action: str, x: int = 0, y: int = 0, x2: int = 0, y2: int = 0, 
         if action == "shortcuts":
             text = si.shortcuts(d)[:9000]                        # the agent lets this one through up to 10000 characters
             return "OK " + json.dumps({"did": "listed the shortcuts", "shortcuts": text or "none known (not Hyprland, and no ~/.daemon-shortcuts.txt)"})
+        if INPUT_STOP_FILE.exists():
+            return f"Error: the emergency brake is on ({INPUT_STOP_FILE} exists): the user stopped mouse and keyboard control"
         win = _active_window()
         view, real = grab_geometry["view"], grab_geometry["real"]
         num = lambda v: int(float(v))
         if action in ("move", "click", "double_click", "right_click", "drag"):
             px, py = si.to_screen(d, num(x), num(y), view, real, grab_geometry.get('box'))
+            why = _input_blocked(d, (px, py))
+            if why:
+                return f"Error: not sent: {why}"
             si.move_to(d, px, py)
             time.sleep(0.05)
         if action == "move":
@@ -1938,7 +1954,11 @@ def screen_input(action: str, x: int = 0, y: int = 0, x2: int = 0, y2: int = 0, 
                 return f"Error: not typed: the window in front looks like a password or authentication prompt ({win[:60]}). Ask the user to type it themselves."
             if len(text) > 2000:
                 return "Error: text is too long (max 2000 characters); type it in parts"
-            if all(c == "\n" or 32 <= ord(c) < 127 for c in text):
+            why = _input_blocked(d)
+            if why:
+                return f"Error: not typed: {why}"
+            text = text.replace("\r\n", "\n")
+            if d.get("unicode") or all(c == "\n" or 32 <= ord(c) < 127 for c in text):
                 for i, line in enumerate(text.split("\n")):
                     if i:
                         si.execute(si.cmd_key(d, "enter"))
@@ -1957,15 +1977,23 @@ def screen_input(action: str, x: int = 0, y: int = 0, x2: int = 0, y2: int = 0, 
             if not str(keys).strip():
                 return "Error: keys is empty (for example enter, ctrl+l, alt+tab)"
             combos = [k for k in re.split(r"[,\s]+", re.sub(r"\s*\+\s*", "+", str(keys).strip())) if k]
+            why = _input_blocked(d)
+            if why:
+                return f"Error: not sent: {why}"
             for k in combos[:6]:
                 si.execute(si.cmd_key(d, k))
                 time.sleep(0.08)
             msg = "pressed " + " then ".join(combos[:6])
         elif action == "scroll":
             n = max(-30, min(30, num(amount) or 3))
+            pt = None
             if x or y:
-                px, py = si.to_screen(d, num(x), num(y), view, real, grab_geometry.get('box'))
-                si.move_to(d, px, py)
+                pt = si.to_screen(d, num(x), num(y), view, real, grab_geometry.get('box'))
+            why = _input_blocked(d, pt)
+            if why:
+                return f"Error: not sent: {why}"
+            if pt:
+                si.move_to(d, pt[0], pt[1])
             si.execute(si.cmd_scroll(d, n))
             msg = f"scrolled {'down' if n > 0 else 'up'} {abs(n)}"
         else:

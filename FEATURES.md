@@ -57,7 +57,7 @@ jobs:
 
 ## 3. Computer control (`computer` tool) - two switches, both off by default
 1. Server: enable the `computer` tool (Settings > Tools, or the Full profile). The model needs vision.
-2. Laptop: start the agent with `--allow screen_input` (add it to the service's ExecStart).
+2. Laptop: start the agent with `--allow screen_input` (add it to the service's ExecStart). Windows: `.\setup-agent.ps1 -Allow screen_input`. One computer, no agent: `DAEMON_ALLOW_INPUT=1` in `.env`.
 
 Install the helpers on the laptop (Arch): `sudo pacman -S ydotool wtype xdotool` (Wayland: `systemctl --user enable --now ydotool`,
 and your user must be allowed to use `/dev/uinput`, see the ydotool wiki). Copy `screeninput.py` next to `tools.py` (deploy.sh does it).

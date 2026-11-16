@@ -7,7 +7,7 @@ Status: **work in progress**. Daemon is developed on Linux; Windows support is a
 | 0 | Server inside WSL2 | Works (below) |
 | 1 | Native Windows server | Written, waiting for your test (below) |
 | 2 | Native Windows laptop agent (wake word, speakers, media keys, volume, clipboard, apps, screenshot) | Written, waiting for your test (below) |
-| 3 | Windows computer control (mouse + keyboard) | Planned, needs real-hardware testing |
+| 3 | Windows computer control (mouse + keyboard) | Written, waiting for your test (below) |
 
 ## Tier 0: WSL2 (works today)
 The server runs unchanged inside WSL2 (Ubuntu). Follow [Getting started](getting-started.md) in the WSL2 terminal.
@@ -134,6 +134,43 @@ On the Windows PC, in the project folder. The server must already have `satellit
 ```powershell
 foreach ($f in 'setup-agent') { $e=$null; [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f.ps1",[ref]$null,[ref]$e) | Out-Null; "$f : $($e.Count) errors" }
 ```
+
+## Tier 3: Windows computer control
+The `computer` tool (the model looks at a screenshot and clicks, types, presses keys, scrolls) works on Windows through `SendInput`; nothing to install. The safety model is the Linux one, unchanged:
+1. **Two switches, both off by default.** The `computer` tool must be enabled on the server (Settings > Tools, vision-capable model), and this PC must allow it: with a laptop agent start it with `-Allow screen_input` (`.\setup-agent.ps1 -Allow screen_input`); with the server on this same PC put `DAEMON_ALLOW_INPUT=1` in `.env` and restart the task.
+2. The first action of every turn asks for your approval; scheduled tasks and background jobs never get the tool; at most `computer.max_actions` actions per turn; `ctrl+alt+delete` and `super+l` stay blocked.
+3. **Emergency brake:** create the file `$HOME\.daemon-stop` (`New-Item $HOME\.daemon-stop`); while it exists every mouse / keyboard action is refused. `Remove-Item $HOME\.daemon-stop` to allow it again.
+4. Text is never typed into a window that looks like a password or authentication prompt (password managers, "Windows Security", "User Account Control", BitLocker, Windows Hello, anything with password / parola / şifre in its title).
+
+**How it works:** the pointer is placed with `SetCursorPos` in real pixels (per-monitor DPI aware, so a 150 % screen and a screen left of or above the main one are exact). Text is typed as Unicode characters, so Turkish Q, English or any other layout gives the same letters (ç ğ ı ö ş ü and emoji included, and the clipboard is left alone). `key` presses virtual keys: a single character key (`a`, `1`, `minus`, `slash` ...) means the key that types that character on the layout of the window in front (so `ctrl+minus` works on Turkish Q too); named keys (`enter`, `f5`, arrows, `super` ...) are the same everywhere. `computer action=shortcuts` lists the standard Windows shortcuts plus your own notes in `~/.daemon-shortcuts.txt`.
+
+**Limits that no program can get around** (the tool answers with an error that says which one applies):
+- **Windows of programs running as administrator** (an elevated PowerShell, Task Manager, installers) ignore input from a normal program (UIPI). The agent checks this first and refuses with a clear message instead of clicking into the void. You can click or type there yourself. Running the agent as administrator removes the limit but also gives the model control of everything: not recommended.
+- **UAC prompts, the lock screen and the sign-in screen** run on a separate "secure desktop"; they can be neither seen nor controlled.
+- Some **games, remote-desktop windows and a few terminals** ignore Unicode typing; use `key` for single letters there.
+- Screens with different scaling work, but a screenshot shows one screen at a time (the one with the window in front); say "look at the other screen" so the model uses `text=<screen name>` (`DISPLAY1`, `DISPLAY2` ...).
+- `key` with a character the active layout has no key for (for example `|` on some layouts) falls back to the US key position, which may type something else; use `type` for such characters.
+
+### Manual test checklist (tier 3)
+Open Notepad first and keep it small, so nothing important is under the pointer. Check the brake works before the rest.
+| # | Do | Expect |
+|---|---|---|
+| 1 | `python tests\run.py twininput` | `ok twininput` |
+| 2 | `python daemon-agent.py --test-input` | prints `session: windows`, both screens with their positions, then moves the pointer to the middle and to two corners; each line ends `OK` (or `OFF BY n px`: send me the output). With two screens of different scaling this is the important one |
+| 3 | Enable the `computer` tool, switch 2 (`DAEMON_ALLOW_INPUT=1` in `.env`, restart the task), chat: "open notepad and type 'çay ğüşöı İi' in it" | approval prompt, Notepad opens, the text appears exactly, with the capital dotted İ |
+| 4 | "select all in notepad and copy it, then tell me what is in my clipboard" | `ctrl+a`, `ctrl+c`; the clipboard text matches |
+| 5 | "type three lines: one, two, three" | three lines (Enter between them) |
+| 6 | "click the File menu in notepad" (then "close it with escape") | the menu opens and closes |
+| 7 | "zoom out the browser page with ctrl and minus" in a browser tab | the page zooms out (this checks the Turkish Q minus key) |
+| 8 | "scroll down 5 in the browser", then "scroll up" | the page scrolls |
+| 9 | "drag the notepad window by its title bar a little to the right" | the window moves |
+| 10 | If you have two screens: put Notepad on the second one, "look at the other screen and click in notepad" | the screenshot switches screens and the click lands in Notepad |
+| 11 | `New-Item $HOME\.daemon-stop`, then "click anywhere" | `Error: the emergency brake is on`; `Remove-Item $HOME\.daemon-stop` and it works again |
+| 12 | Open an elevated PowerShell (right click > Run as administrator), ask to "type hello in the window in front" | `Error: not typed: the window runs as administrator ...` and nothing is typed |
+| 13 | Open Windows Security or a window with "password" in its title, ask to type "a" | refused as a password prompt |
+| 14 | Ask for `ctrl+alt+delete` | `blocked` |
+
+**Untested:** all of it on real Windows. The logic (coordinate mapping with negative origins, key resolution for the Turkish and US layouts, event order, refusals) is covered by mocked tests, the `SendInput` / `SetCursorPos` / UIPI calls are not. I will not call tier 3 working until you have run `--test-input` and items 3-12.
 
 ## Troubleshooting
 - **`ffmpeg not found`:** `winget install Gyan.FFmpeg`, then open a new PowerShell (PATH is read at start).

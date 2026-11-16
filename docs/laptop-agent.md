@@ -36,6 +36,8 @@ cd ~/daemon                               # the clone on the laptop
 - The script installs system packages (portaudio, playerctl, wl-clipboard/xclip), makes `agent-venv/`, writes `~/.config/daemon-agent.json` (mode 600), tests the connection and starts the user service `daemon-agent`.
 - Options: `--device "mic name"` (list names with `python -m sounddevice`), `--no-service`, `--no-system`, `--allow <tool>` (below), `--remove` (uninstall the service).
 
+**Windows:** `.\setup-agent.ps1 -Server https://NAME.tailnet.ts.net -Token TOKEN` does the same with a Task Scheduler task (no administrator, no system packages); see [Windows](windows.md#tier-2-native-windows-laptop-agent). `python daemon-agent.py --probe` checks what works on that desktop.
+
 **3. Check.** In the dashboard: **Settings > Voice > Wake word** should say "Laptop agent connected". Then say "hey daemon, what time is it" or ask in the dashboard to "pause the music".
 Logs: `journalctl --user -u daemon-agent -f` (Windows: `Get-Content logs\agent.log -Wait -Tail 30`).
 
@@ -55,12 +57,10 @@ Without an entry in `satellite.tools`, `execute_command` runs on the **server**.
 ## Computer control: what to know before you turn it on
 Details are in [FEATURES.md](../FEATURES.md#3-computer-control-computer-tool---two-switches-both-off-by-default). In short:
 - Needs a vision-capable model. It sees a screenshot of the focused monitor with a coordinate grid.
-- Linux only: Wayland (Hyprland tested) uses `ydotool` and `wtype`, X11 uses `xdotool`. Install them (`sudo pacman -S ydotool wtype xdotool`) and make sure your user can use `/dev/uinput` (ydotool wiki).
+- Linux: Wayland (Hyprland tested) uses `ydotool` and `wtype`, X11 uses `xdotool`. Install them (`sudo pacman -S ydotool wtype xdotool`) and make sure your user can use `/dev/uinput` (ydotool wiki). Windows: nothing to install (SendInput), see [Windows](windows.md#tier-3-windows-computer-control).
 - Test before trusting it: `venv/bin/python daemon-agent.py --test-input` takes a screenshot and moves the pointer to the middle of the screen.
 - The first action of each turn asks for your approval; at most `computer.max_actions` actions per turn; some key combos are blocked; typing into password prompts is refused.
-- Emergency brake: `touch ~/.daemon-stop` on the laptop. Delete the file to allow input again.
-
-**Windows:** `.\setup-agent.ps1 -Server https://NAME.tailnet.ts.net -Token TOKEN` does the same with a Task Scheduler task (no administrator, no system packages); see [Windows](windows.md#tier-2-native-windows-laptop-agent). `python daemon-agent.py --probe` checks what works on that desktop.
+- Emergency brake: `touch ~/.daemon-stop` on the laptop (Windows: `New-Item $HOME\.daemon-stop`). Delete the file to allow input again. It works for the agent and for a server that controls its own computer.
 
 ## Running the agent by hand
 ```bash

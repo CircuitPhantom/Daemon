@@ -40,7 +40,7 @@ if ((REMOVE)); then
   rm -f "$UNIT_DIR/daemon-agent.service"; systemctl --user daemon-reload
   echo "Removed the agent service (settings stay in $CONF)"; exit 0
 fi
-for f in daemon-agent.py tools.py wakeword.py screeninput.py; do [[ -f "$f" ]] || die "$f is missing in $HERE (copy it from the Daemon folder)"; done
+for f in daemon-agent.py tools.py wakeword.py screeninput.py platform_support.py; do [[ -f "$f" ]] || die "$f is missing in $HERE (copy it from the Daemon folder)"; done
 
 if ((SYSTEM)); then
   say "System packages"
