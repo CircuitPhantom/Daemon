@@ -74,7 +74,7 @@ Open <http://127.0.0.1:8000>. The full walk-through is in [docs/getting-started.
 ## Security
 Daemon can run commands and control your desktop on behalf of a language model. Treat it accordingly.
 - Listen on `127.0.0.1` (the default) and reach it through Tailscale or a reverse proxy with TLS. Never expose port 8000 to the internet. Set a PIN.
-- Risky tools (`execute_command`, `write_file`, `computer`...) ask for your approval (`security.confirm_tools`); scheduled tasks and
+- Risky tools (`execute_command`, `write_file`, `send_file`, `screenshot` by default) ask for your approval (`security.confirm_tools`), and `computer` asks before the first action of each turn; scheduled tasks and
   background jobs never get them.
 - Computer control needs two switches: the tool enabled on the server and `--allow screen_input` on the laptop agent.
   `touch ~/.daemon-stop` on the laptop is an emergency brake.

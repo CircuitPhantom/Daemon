@@ -266,7 +266,7 @@ _HEADER = (
     "# app_aliases: names for open_app, e.g. spotify: spotify-launcher\n"
     "# spotify / spotify_aliases: for the spotify_play tool (client_id + client_secret from developer.spotify.com, and your own names for links)\n"
     "# Restart the server after changing stt/tts.\n"
-    "# notify: timezone, dashboard address and phone call (Twilio) settings. Keep this file private. Keys and tokens can live in .env instead: write api_key: ${NAME} here, NAME=value in .env.\n"
+    "# notify: timezone, dashboard address and phone call (Twilio) settings. Keep this file private. Secrets (keys, tokens, phone numbers) are read from .env: the fields below say ${DAEMON_...:-} and the values go in .env (copy .env.example).\n"
     "# Note: when a setting changes from the web UI the file is rewritten, so your own comments are lost.\n\n"
 )
 

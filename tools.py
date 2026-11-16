@@ -1237,7 +1237,7 @@ def spotify_play(query: str, kind: str = "track", device: str = "") -> str:
                 except RuntimeError as e:
                     note = f" Search is unavailable: {e}."
             else:
-                note = " Searching needs spotify.client_id and client_secret in config.yaml."
+                note = " Searching needs DAEMON_SPOTIFY_CLIENT_ID and DAEMON_SPOTIFY_CLIENT_SECRET in .env."
     if not uri:                                             # no search: open the search page instead
         err = _spotify_open("spotify:search:" + urllib.parse.quote(q), play=False)
         if err:
@@ -1262,7 +1262,7 @@ def spotify_play(query: str, kind: str = "track", device: str = "") -> str:
 def _spotify_player_api(cfg, method, path, body=None):
     """Calls the Spotify player API as the user. Returns parsed JSON ({} when empty). Raises RuntimeError with a readable reason."""
     if not cfg.get("client_id") or not cfg.get("client_secret"):
-        raise RuntimeError("set spotify.client_id and spotify.client_secret in config.yaml first")
+        raise RuntimeError("set DAEMON_SPOTIFY_CLIENT_ID and DAEMON_SPOTIFY_CLIENT_SECRET in .env first")
     tok = _spotify_user_token(cfg)
     if not tok:
         raise RuntimeError("log in to Spotify once with spotify_login.py (Premium is needed to control devices)")

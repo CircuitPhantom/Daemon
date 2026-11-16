@@ -200,7 +200,7 @@ class SignalBot:
             if not want:
                 if self._proc is not None:
                     self._kill()
-                self.error = "" if not c["enabled"] else "set signal.account and signal.allowed in config.yaml"
+                self.error = "" if not c["enabled"] else "set DAEMON_SIGNAL_ACCOUNT and DAEMON_SIGNAL_ALLOWED in .env"
                 return
             if self._alive():
                 if sig != self._sig:            # settings were edited: restart with the new ones
@@ -349,7 +349,7 @@ class SignalBot:
             return False, "signal is off (signal.enabled in config.yaml)"
         who = to or self._primary()
         if not who:
-            return False, "set signal.allowed in config.yaml"
+            return False, "set DAEMON_SIGNAL_ALLOWED in .env"
         if not self._alive():
             return False, "signal is not running" + (f": {self.error}" if self.error else "")
         text = plain(text)
@@ -379,7 +379,7 @@ class SignalBot:
             return False, "signal is off (signal.enabled in config.yaml)"
         who = to or self._primary()
         if not who:
-            return False, "set signal.allowed in config.yaml"
+            return False, "set DAEMON_SIGNAL_ALLOWED in .env"
         if not self._alive():
             return False, "signal is not running" + (f": {self.error}" if self.error else "")
         if not os.path.isfile(path):

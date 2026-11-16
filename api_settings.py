@@ -154,7 +154,7 @@ def notify_test():
 @router.post("/api/notify/test-call")
 def notify_test_call():
     if not twilio_call.configured():
-        return {"ok": False, "info": "not configured: set notify.twilio_sid, twilio_token, twilio_from in config.yaml"}
+        return {"ok": False, "info": "not configured: set DAEMON_NOTIFY_TWILIO_SID, DAEMON_NOTIFY_TWILIO_TOKEN, DAEMON_NOTIFY_TWILIO_FROM and DAEMON_NOTIFY_TWILIO_TO in .env"}
     if phone_bridge.available():
         ok, info = twilio_call.place_talk_call("Daemon test call. Say something and I will answer.")
     else:

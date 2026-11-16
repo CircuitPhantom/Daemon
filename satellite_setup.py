@@ -17,13 +17,13 @@ if "--off" in sys.argv:
     print("Laptop agent link is off. This computer uses its own microphone and desktop tools again.")
     sys.exit(0)
 if "--new" in sys.argv or len(c["token"]) < 16:
-    c["token"] = secrets.token_urlsafe(32)
+    c["token"] = secrets.token_urlsafe(32).lstrip("-")   # a leading "-" would look like an option on a command line
 c["enabled"] = True
 model_config.save()
 print("Laptop agent link is on (config.yaml -> satellite). Restart the server: systemctl --user restart daemon")
 print()
 print("On the laptop run (use your server's Tailscale name):")
-print(f"  python daemon-agent.py --server http://SERVER:8000 --token {c['token']}")
+print(f"  python daemon-agent.py --server http://SERVER:8000 --token={c['token']}")
 print("or put them in ~/.config/daemon-agent.json:")
 print('  {"server": "http://SERVER:8000", "token": "%s"}' % c["token"])
 print()

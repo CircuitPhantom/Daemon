@@ -81,7 +81,7 @@ except Exception as e:
 print("\nModel")
 llm_ok = bool(mc.llm["api_key"] and mc.llm["base_url"] and mc.llm["model"])
 show(OK if llm_ok else BAD, f"model {mc.llm['model']} at {mc.llm['base_url']}" if llm_ok else "the model is not set up",
-     "fill llm.base_url, llm.api_key and llm.model in config.yaml (Anthropic: https://api.anthropic.com/v1)")
+     "DAEMON_LLM_API_KEY in .env, llm.base_url and llm.model in config.yaml (Anthropic: https://api.anthropic.com/v1)")
 if mc.stt["device"] == "cuda":
     show(OK if shutil.which("nvidia-smi") else WARN, "stt.device is cuda", "no NVIDIA GPU found here: set stt.device: cpu and compute_type: int8")
 

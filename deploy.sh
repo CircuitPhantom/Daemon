@@ -2,7 +2,7 @@
 # Puts the new files on the server in one go, and checks that it still works. Run it on the LAPTOP, in the folder
 # where you downloaded the new files.
 #
-#   bash deploy.sh                      first time: asks nothing, uses --host/--dir below and remembers them
+#   bash deploy.sh                      uses the --host/--dir remembered from the last run (the first run needs --host)
 #   bash deploy.sh --host user@server-name --dir '~/daemon'
 #   bash deploy.sh --dry-run            only show what would change
 #   bash deploy.sh --rollback           put back the files of the last deploy and restart

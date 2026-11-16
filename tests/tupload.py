@@ -85,6 +85,7 @@ with TestClient(server.app) as client:
     # file endpoint
     rel=[t for t in cur if t.get("files")][0]["files"][0]["rel"]
     g=client.get("/api/files/"+rel); ok(g.status_code==200 and g.headers["content-disposition"].startswith("attachment") and g.headers["x-content-type-options"]=="nosniff", g.headers)
+    ok('filename="notes.txt"' in g.headers["content-disposition"], g.headers)   # the random prefix of the stored upload is gone
     prel=[f for t in cur for f in t.get("files") or [] if f["kind"]=="image"][0]["rel"]
     g=client.get("/api/files/"+prel); ok(g.status_code==200 and g.headers["content-type"].startswith("image/"), g.headers)
     for bad in ("../cfg30.yaml","..%2Fcfg30.yaml","%2e%2e/%2e%2e/etc/passwd","/etc/passwd","nope/none.txt"):

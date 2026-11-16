@@ -27,7 +27,7 @@ wake:
   followup_seconds: 6      # after a reply, keep listening this long without the wake word
 ```
 - Needs `sounddevice` and the portaudio system package.
-- `whisper` engine: every short utterance is transcribed and checked for the phrase. Works with any phrase, uses more CPU while people talk, and sends all speech to the server when the laptop agent is used.
+- `whisper` engine: every short utterance is transcribed and checked for the phrase. Works with any phrase, uses more CPU while people talk. With the laptop agent the transcription runs on the laptop (only with `--server-stt` does the audio go to the server).
 - `openwakeword` engine: `pip install openwakeword`, `oww_model: hey_jarvis` (or a path to your own `.onnx`). Light and runs entirely on the microphone's machine.
 - If Whisper writes the name differently ("demon", "damian"), add those to `wake.aliases`.
 - Replies play through the computer's speakers (`pw-play`, `paplay` or `aplay`) and the whole conversation also shows up in the dashboard chat.

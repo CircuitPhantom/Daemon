@@ -199,7 +199,7 @@ def state():
     if not c["enabled"]:
         return False, "off"
     if not c["api_key"]:
-        return False, "no api_key in config.yaml"
+        return False, "no API key (DAEMON_ELEVENLABS_API_KEY in .env)"
     if c["local_only"]:
         return False, "local voice only (switch)"
     with _lock:
@@ -273,7 +273,7 @@ def test(text="Hello, this is a test of the ElevenLabs voice."):
     """Tries once, ignoring the switch and any cooldown. Returns {ok, info}."""
     c = _cfg()
     if not c["api_key"]:
-        return {"ok": False, "info": "set elevenlabs.api_key in config.yaml"}
+        return {"ok": False, "info": "set DAEMON_ELEVENLABS_API_KEY in .env"}
     t0 = time.time()
     try:
         data = _synth(text)

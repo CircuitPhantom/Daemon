@@ -10,6 +10,7 @@ for f in ("cfg31.yaml","mem31.json","rem31.json","sig_in.txt","sig_sent.txt","in
 shutil.rmtree("chats31", ignore_errors=True); shutil.rmtree(D, ignore_errors=True)
 os.makedirs(D+"/notes")
 open(D+"/notes/shopping.txt","w").write("milk\neggs\n")
+open(D+"/notes/disk-report.txt","w").write("ok\n")
 open("/tmp/secret31.txt","w").write("top secret")
 def ok(c,m=""):
     if not c: print("FAIL",m); sys.exit(1)
@@ -73,6 +74,7 @@ with TestClient(server.app) as client:
     ev=say("sendfile:file=notes/shopping.txt"); f=[e for e in ev if e.get("type")=="files"]
     ok(f and f[0]["files"][0]["name"]=="shopping.txt" and f[0]["files"][0]["rel"]=="notes/shopping.txt", ev)
     g=client.get("/api/dl/notes/shopping.txt"); ok(g.status_code==200 and g.content==b"milk\neggs\n" and "attachment" in g.headers["content-disposition"], g.headers)
+    g=client.get("/api/dl/notes/disk-report.txt"); ok(g.status_code==200 and 'filename="disk-report.txt"' in g.headers["content-disposition"], g.headers)   # no prefix to strip here
     turns=client.get("/api/chats/current").json()["chat"]["turns"]; ok(turns[-1]["out_files"][0]["name"]=="shopping.txt", turns[-1].keys())
     # --- send_file: where=phone -> Signal attachment with clean name
     n=len(sent()); ev=say("sendfile:file=notes/shopping.txt;where=phone"); ok(wait(lambda: len(sent())>n), "phone send")
